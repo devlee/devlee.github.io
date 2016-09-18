@@ -1,2 +1,0 @@
-# devlee.github.io
-iJuJu
