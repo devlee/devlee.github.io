@@ -71,3 +71,7 @@ deploy:
   type: git
   repo: git@github.com:devlee/devlee.github.io.git
   branch: master
+
+addlink:
+  before_text: 本文地址
+  domain: logit.space
