@@ -5,6 +5,7 @@
 # Site
 title: iJuJu
 subtitle: byLieLie
+avatar: /uploads/avatar.png
 description: Momentum
 author: devlee
 language: zh-Hans
@@ -73,3 +74,12 @@ deploy:
   branch: master
   plugins:
     - hexo-generator-cname
+
+# Baidu
+baidu_analytics: 08fe328dbbd27892d9d9c059f467f8dd
+
+# Counter
+leancloud_visitors:
+  enable: true
+  app_id: Jx0fit38Gf1Gjfls2KFbt20c-gzGzoHsz
+  app_key: ay8SF3G6AeklQbPEy8CEfOzF
