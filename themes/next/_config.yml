@@ -117,8 +117,9 @@ font:
 # Social Links
 # Key is the link label showing to end users.
 # Value is the target link (E.g. GitHub: https://github.com/iissnan)
-#social:
-  #LinkLabel: Link
+social:
+  GitHub: https://github.com/devlee
+  知乎: https://www.zhihu.com/people/tang-li-03-13
 
 
 # Social Links Icons
@@ -208,7 +209,7 @@ scroll_to_more: true
 # Automatically Excerpt. Not recommand.
 # Please use <!-- more --> in the post to control excerpt accurately.
 auto_excerpt:
-  enable: false
+  enable: true
   length: 150
 
 
@@ -235,7 +236,7 @@ mathjax:
 #swiftype_key:
 
 # Baidu Analytics ID
-#baidu_analytics:
+baidu_analytics: 08fe328dbbd27892d9d9c059f467f8dd
 
 # Duoshuo ShortName
 #duoshuo_shortname:
@@ -291,9 +292,9 @@ facebook_sdk:
 # Show number of visitors to each article.
 # You can visit https://leancloud.cn get AppID and AppKey.
 leancloud_visitors:
-  enable: false
-  app_id: #<app_id>
-  app_key: #<app_key>
+  enable: true
+  app_id: Jx0fit38Gf1Gjfls2KFbt20c-gzGzoHsz
+  app_key: ay8SF3G6AeklQbPEy8CEfOzF
 
 # Show PV/UV of the website/page with busuanzi.
 # Get more information on http://ibruce.info/2015/04/04/busuanzi/

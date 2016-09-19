@@ -75,11 +75,7 @@ deploy:
   plugins:
     - hexo-generator-cname
 
-# Baidu
-baidu_analytics: 08fe328dbbd27892d9d9c059f467f8dd
-
-# Counter
-leancloud_visitors:
-  enable: true
-  app_id: Jx0fit38Gf1Gjfls2KFbt20c-gzGzoHsz
-  app_key: ay8SF3G6AeklQbPEy8CEfOzF
+# 打赏
+reward_comment: 坚持原创技术分享，您的支持将鼓励我继续创作！
+wechatpay: /uploads/wechatpay.png
+alipay: /uploads/alipay.jpg

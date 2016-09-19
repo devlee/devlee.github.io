@@ -842,6 +842,29 @@ tags:
     docker run -itd --name=容器1 --network=网络名 --env="constraint:node==机器1" 应用1
         docker run -itd --name=容器2 --network=网络名 --env="constraint:node==机器2" 应用2
 
+### 参考文章
+1. [使用Docker构建持续集成与自动部署的Docker集群](https://my.oschina.net/jayqqaa12/blog/633683)
+2. [Demo of the Machine + Swarm + Compose integration](https://www.youtube.com/watch?v=M4PFY6RZQHQ)
+3. [Get started with multi-host networking](https://docs.docker.com/engine/userguide/networking/get-started-overlay/#/step-1-set-up-a-key-value-store)
+4. [理解Docker跨多主机容器网络](http://tonybai.com/2016/02/15/understanding-docker-multi-host-networking/)
+5. [Swarm and container networks](https://docs.docker.com/swarm/networking/)
+6. [搭建docker内网私服（docker-registry with nginx&ssl on centos）](https://segmentfault.com/a/1190000000801162)
+7. [利用nginx及Registry2.0搭建Docker安全私有仓库](http://xialingsc.github.io/home//docker/how-to-build-a-secure-private-docker-registry2.0-with-nginx/)
+8. [基于 ubuntu 搭建 docker registry](https://laserx.github.io/2016/02/22/build-self-hosted-docker-registry/)
+9. [搭建Docker私有仓库Registry-v2](http://www.tuicool.com/articles/6jEJZj)
+10. [Docker Machine快速安装Docker环境（二）](http://lizhenliang.blog.51cto.com/7876557/1730028)
+11. [用Git子模块和Docker Compose实现高效开发工作流](http://dockone.io/article/265)
+12. [Docker Compose—简化复杂应用的利器](http://debugo.com/docker-compose/)
+13. [从0到1：搭建基于Travis CI和GitHub的自动化测试工作流](http://dockone.io/article/962)
+14. [使用docker实现半自动化代码自动部署](http://www.tuicool.com/articles/6femE3)
+15. [基于docker+gitlabCI搭建私有集成环境](http://blog.kazaff.me/2016/06/15/%E5%9F%BA%E4%BA%8Edocker+gitlabCI%E6%90%AD%E5%BB%BA%E7%A7%81%E6%9C%89%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E7%8E%AF%E5%A2%83/)
+16. [使用Gitlab CI & Docker搭建CI环境](http://walterinsh.github.io/2016/04/18/using-gitlab-ci.html)
+17. [尝试持续集成--第一版](http://blog.kazaff.me/2016/06/16/%E5%B0%9D%E8%AF%95%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90--%E7%AC%AC%E4%B8%80%E7%89%88/)
+18. [Gitlab CI Runner的创建和配置](http://zhaozhiming.github.io/blog/2015/11/30/gitlab-ci-runner-create-and-config/)
+19. [使用 Docker 建置 Gitlab CE 的 Source Control 及 CI 環境](http://jigsawye.com/2015/09/25/gitlab-ce-in-docker/)
+20. [如何在 Docker 容器之间设置网络](https://linux.cn/article-5556-1.html)
+21. [Installation On Ubuntu](https://docs.docker.com/engine/installation/linux/ubuntulinux/)
+
 
 
 
