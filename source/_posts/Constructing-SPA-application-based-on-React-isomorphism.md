@@ -87,58 +87,7 @@ tags:
       "babel-cli": "^6.18.0",
       "babel-core": "^6.0.0",
       "babel-loader": "^6.2.7",
-      "babel-plugin-transform-class-properties": "^6.19.0",
-      "babel-plugin-transform-decorators-legacy": "^1.3.4",
-      "babel-plugin-transform-runtime": "^6.15.0",
-      "babel-preset-latest": "^6.16.0",
-      "babel-preset-react": "^6.16.0",
-      "babel-preset-stage-0": "^6.16.0",
-      "classnames": "^2.2.5",
-      "co-views": "^2.1.0",
-      "copy-webpack-plugin": "^4.0.1",
-      "core-decorators": "^0.14.0",
-      "css-loader": "^0.25.0",
-      "extract-text-webpack-plugin": "^1.0.1",
-      "file-loader": "^0.9.0",
-      "ip": "^1.1.4",
-      "isomorphic-fetch": "^2.2.1",
-      "isomorphic-style-loader": "^1.1.0",
-      "json-loader": "^0.5.4",
-      "koa": "next",
-      "koa-favicon": "next",
-      "koa-locale": "^1.2.0",
-      "koa-router": "next",
-      "koa-socket": "^4.4.0",
-      "koa-sslify": "next",
-      "koa-static": "next",
-      "material-ui": "^0.16.4",
-      "normalize.css": "^5.0.0",
-      "offline-plugin": "^4.5.3",
-      "postcss": "^5.2.5",
-      "postcss-cssnext": "^2.8.0",
-      "postcss-import": "8.1.2",
-      "postcss-loader": "^1.1.1",
-      "postcss-nested": "^1.0.0",
-      "react": "^15.4.1",
-      "react-dom": "^15.4.0",
-      "react-hot-loader": "^3.0.0-beta.6",
-      "react-intl": "^2.1.5",
-      "react-intl-redux": "^0.1.0",
-      "react-motion": "^0.4.5",
-      "react-redux": "^4.4.6",
-      "react-router": "^3.0.0",
-      "react-tap-event-plugin": "^2.0.1",
-      "redux": "^3.6.0",
-      "redux-logger": "^2.7.4",
-      "redux-observable": "^0.12.2",
-      "reselect": "^2.5.4",
-      "rxjs": "^5.0.0-rc.5",
-      "socket.io": "^1.7.2",
-      "socket.io-client": "^1.7.1",
-      "spdy": "^3.4.4",
-      "style-loader": "^0.13.1",
-      "swig": "^1.4.2",
-      "universal-webpack": "^0.1.41",
+      ...
       "url-loader": "^0.5.7",
       "webpack": "^1.13.3",
       "webpack-node-externals": "^1.5.4"
@@ -263,196 +212,98 @@ tags:
 
 > [webpack-node-externals](https://github.com/liady/webpack-node-externals) webpack插件，用以node端不打包node_modules里的库
 
-### Step 2 创建前后端入口文件及webpack配置
+### Step 2 创建项目配置、通用代码、静态资源
 
-client: /src/client/index.jsx
+项目配置 ./config/index.js
 
-    import React from 'react';
+    const asset = require('./asset');
     
-    import { render } from 'react-dom';
+    const intl = require('./intl');
     
-    import { Router, browserHistory } from 'react-router';
+    const server = require('./server');
     
-    import { Provider } from 'react-intl-redux';
+    const siteName = 'devlee.io';
     
-    import injectTapEventPlugin from 'react-tap-event-plugin';
-    
-    import configureStore from './store';
-    
-    import route from './route';
-    
-    import reducer from './reducer';
-    
-    import socket from './socket';
-    
-    import sw from './service-worker';
-    
-    import { isPwa } from '../universal/env';
-    
-    window.onload = () => {
-      /* eslint-disable no-underscore-dangle */
-      if (isPwa) {
-        sw.init();
-      }
-    
-      socket.init();
-    
-      const store = configureStore(
-        reducer,
-        window.__INITIAL_STATE__
-      );
-    
-      const state = store.getState();
-    
-      injectTapEventPlugin();
-    
-      render(
-        <Provider store={store}>
-          <Router history={browserHistory}>
-            {route(state)}
-          </Router>
-        </Provider>,
-        document.getElementById('app')
-      );
+    module.exports = {
+      asset: asset,
+      intl: intl,
+      server: server,
+      siteName: siteName
     };
 
-前端入口文件，我们需要对相关功能作初始化操作，包括service-worker(PWA mode)，socket，redux store, material-ui tapEvent, react render。
-（可选）如果当前是PWA模式，那么需要执行sw的init，来初始化service worker;
-（可选）socket直接执行init方法即可；
-（可选）如果使用redux，则需要store配置，需要reducer和初始状态集window.__INITIAL_STATE__，该值由服务端渲染到页面的script中；
-（可选）如果使用redux，则需要获取state，利用store的getSate方法获得；
-（可选）如果使用material-ui，则必须执行injectTapEventPlugin方法来注入tagEvent；
-（可选）如果使用intl，Provider从react-intl-redux引入，否则从react-redux引入。
-（可选）如果使用react-router，则需配置history和route
-（必须）render方法必须，第一个参数是组件，第二个参数是挂载的dom对象
+输出各分类配置
 
-> PWA模式：[Progressive Web Apps](https://developers.google.com/web/progressive-web-apps/)
+客户端打包文件配置： ./config/asset/index.js
 
-server: /index.js
-
-    const UniversalWebpack = require('universal-webpack');
-    
-    const config = require('./config/webpack');
-    
-    const settings = require('./config/webpack/setting');
-    
-    UniversalWebpack.server(config, settings);
-
-该文件为服务端启动文件，即可通过node命令直接运行的。UniversalWebpack会通过webpack的配置config和服务端的设置settings来启动服务。
-
-server: /src/server/index.js
-
-    import Koa from 'koa';
-    
-    import fs from 'fs';
-    
-    import http from 'http';
-    
-    import spdy from 'spdy';
-    
-    import path from 'path';
-    
-    import middleware from './middleware';
-    
-    import router from './route';
-    
-    import config from '../../config';
-    
-    import { env, isPwa } from '../universal/env';
-    
-    const rootFolder = path.resolve(__dirname, '../..');
-    
-    export default () => {
-      let httpsApp;
-      const httpApp = new Koa();
-      const serverConfig = config.server;
-      let app;
-      let options;
-    
-      if (isPwa) {
-        httpsApp = new Koa();
-        app = httpsApp;
-        options = {
-          key: fs.readFileSync(path.resolve(rootFolder, './config/server/ssl/devlee.io.key')),
-          cert: fs.readFileSync(path.resolve(rootFolder, './config/server/ssl/devlee.io.crt'))
-        };
-        httpApp.use(ctx => {
-          ctx.status = 301;
-          ctx.redirect(`https://${ctx.hostname}:${serverConfig[env].ports}${ctx.path}${ctx.search}`);
-          ctx.body = 'Redirecting to https';
-        });
-      } else {
-        app = httpApp;
-      }
-    
-      middleware.intl(app);
-    
-      app.use(middleware.error)
-         .use(middleware.ssl)
-         .use(middleware.favicon)
-         .use(middleware.static)
-         .use(middleware.helper)
-         .use(middleware.navigator)
-         .use(middleware.view)
-         .use(router.routes())
-         .use(router.allowedMethods());
-    
-      if (isPwa) {
-        http.createServer(httpApp.callback()).listen(serverConfig[env].port, () => {
-          console.log(`http app start at port ${serverConfig[env].port}`);
-        });
-        const httpsServer = spdy.createServer(
-          options,
-          httpsApp.callback()
-        );
-        middleware.io(httpsServer);
-        httpsServer.listen(serverConfig[env].ports, () => {
-          console.log(`https app start at port ${serverConfig[env].ports}`);
-        });
-      } else {
-        middleware.io(app);
-        app.listen(serverConfig[env].port, () => {
-          console.log(`http app start at port ${serverConfig[env].port}`);
-        });
+    module.exports = {
+      development: {
+        port: 8066,
+        prefix: '/'
+      },
+      production: {
+        port: 8066
       }
     };
 
-该文件为主要入口文件，由于需要被UniversalWebpack所使用，所以必须export一个function，在function中写相关代码。
-PWA模式下会启动http和spdy两种服务，spdy（强制https，支持http2），这里的http服务只做强制跳转https作用；
-普通开发模式下只创建http服务；
-两种模式下的koa实例都会加载中间件实现响应的功能，例如route，socket等。
+输出不同开发环境下所需变量，这里有端口和路径相关的变量。
 
-webpack: /config/webpack/index.js
+服务端应用程序配置： ./config/server/index.js
 
-    const path = require('path');
+    module.exports = {
+      development: {
+        port: 80,
+        ports: 443
+      },
+      production: {
+        port: 80,
+        ports: 443
+      }
+    };
+
+> ./config/server/ssl下的devlee.io.crt和devlee.io.key为证书
+
+intl国际化配置： ./config/intl/index.js
+
+    const en = require('./en');
+    const zh = require('./zh');
     
-    const webpack = require('webpack');
-    
-    const ip = require('ip');
-    
-    const postcssImport = require('postcss-import');
-    
-    const postcssNested = require('postcss-nested');
-    
-    const postcssCssNext = require('postcss-cssnext');
-    
-    const extractTextWebpackPlugin = require('extract-text-webpack-plugin');
-    
-    const config = require('../../config');
-    
-    const rootFolder = path.resolve(__dirname, '../..');
-    
-    const env = process.env.NODE_ENV || 'development';
-    
-    const pwa = Boolean(process.env.PWA);
-    
-    const assetConfig = config.asset;
-    
-    const assetConfigPort = assetConfig[env].port;
-    
-    const assetConfigPrefix = assetConfig[env].prefix;
-    
-    const assetPath = pwa ? `${assetConfigPrefix}` : `//${ip.address()}:${assetConfigPort}${assetConfigPrefix}`;
+    module.exports = {
+      en: en,
+      zh: zh
+    };
+
+这里直接输出具体的语言包
+
+英语： ./config/intl/en.js
+
+    module.exports = {
+      locale: 'en',
+      messages: {
+        nav: {
+          home: 'Home',
+          about: 'About',
+          demo: 'Demo'
+        }
+      }
+    };
+
+中文： ./config/intl/zh.js
+
+    module.exports = {
+      locale: 'zh',
+      messages: {
+        nav: {
+          home: '首页',
+          about: '关于'
+        }
+      }
+    };
+
+> 中文代码最好区分zh-CN，zh-TW
+
+webpack: ./config/webpack/index.js
+
+    ...
     
     const webpackConfig = {
       context: rootFolder,
@@ -573,3 +424,365 @@ webpackConfig属性详解：
 > regular_expressions: UniversalWebpack配置需要
 
 > postcss: postcss插件配置
+
+webpack.setting: ./config/webpack/setting.js
+
+    module.exports = {
+      server: {
+        input: './src/server/index.js',
+        output: './build/server/index.js'
+      }
+    };
+
+该文件配置服务端代码编译入口及出口文件路径。
+
+webpack.client: ./config/webpack/client.js
+
+    ...
+    
+    delete webpackConfig.externals;
+    
+    webpackConfig.plugins = webpackConfig.plugins || [];
+    
+    webpackConfig.plugins.push(
+      new webpack.DefinePlugin({
+        'process.env': {
+          CLIENT: JSON.stringify(true)
+        }
+      })
+    );
+    
+    if (pwa) {
+      webpackConfig.plugins.unshift(
+        new CopyWebpackPlugin([{
+          from: path.resolve(rootFolder, './static'),
+          to: path.resolve(rootFolder, './build')
+        }])
+      );
+      webpackConfig.plugins.push(
+        new OfflinePlugin({
+          ServiceWorker: {
+            navigateFallbackURL: '/'
+          }
+        })
+      );
+    }
+    
+    module.exports = webpackConfig;
+
+客户端webpack配置在基础配置之上做一些处理：
+（可选）这里删除externals是为了开发所需，实际上不删除也可以，只需要在html中加入相应库的cdn地址就可以了；
+（必须）新增全局变量process.env.CLIENT为true
+（可选）PWA模式下需要把static下的文件拷贝至build目录下，因为该模式下服务端会把build目录作为静态资源服务的目录；
+（可选）PWA模式下需要设置OfflinePlugin，对于未命中sw的路径会跳转至根路径。
+
+webpack.server: ./config/webpack/server.js
+
+    delete webpackConfig.externals;
+    
+    webpackConfig = universalWebpack.serverConfiguration(webpackConfig, settings);
+    
+    webpackConfig.node = {
+      __dirname: true,
+      __filename: true
+    };
+    
+    webpackConfig.externals = [webpackNodeExternals()];
+    
+    module.exports = webpackConfig;
+
+服务端webpack配置在基础配置之上做一些处理：
+（可选）这里删除externals其实没必要，下面会重写
+（必须）利用UniversalWebpack生成新的服务端配置
+（必须）UniversalWebpack默认的node属性里的属性值为false，我们这按需要必须要要设置为true，这样不会导致路径出问题。
+（必须）利用webpackNodeExternals插件过滤掉node_modules里的库，避免打包
+
+通用代码： ./src/universal
+
+cookie处理: ./src/universal/cookie.js
+
+    ...
+    
+    export function setCookie(name, value, option, ctx) {
+      // server
+      if (ctx) {
+        return ctx.cookies.set(name, value, option);
+      }
+    
+      // client
+      ...
+    
+      document.cookie = str;
+    }
+    
+    export function getCookie(name, ctx) {
+      // server
+      if (ctx) {
+        if (!name) {
+          return ctx.cookies;
+        }
+    
+        return ctx.cookies.get(name);
+      }
+    
+      // client
+      if (!name) {
+        return parse(document.cookie);
+      }
+    
+      return parse(document.cookie)[name];
+    }
+    
+    export function clearCookie(name, option, ctx) {
+      // server
+      if (ctx) {
+        return ctx.cookies.set(name, null, option);
+      }
+    
+      // client
+      setCookie(name, null, option);
+    }
+
+输出三个函数分别为设置、获取、清除cookie，最后一个参数适用于服务端koa
+
+域名设置: ./src/universal/domain.js
+
+    import { env } from './env';
+    
+    let defDomain = 'localhost';
+    
+    defDomain = (env === 'production' ? 'devlee.io' : defDomain);
+    
+    const domain = defDomain;
+    
+    export default domain;
+
+根据环境输出当前域名
+
+环境变量: ./src/universal/env.js
+
+    const pwa = process.env.PWA;
+    
+    export const env = process.env.NODE_ENV || 'development';
+    
+    export const isPwa = String(pwa) === 'true';
+    
+    export const isDev = String(env) === 'development';
+    
+    export const isClient = String(process.env.CLIENT) === 'true';
+
+输出当前环境变量名、是否为PWA模式、是否为开发模式、是否是客户端环境
+
+intl国际化相关变量: ./src/universal/intl.js
+
+    import en from 'react-intl/locale-data/en';
+    
+    import zh from 'react-intl/locale-data/zh';
+    
+    import config from '../../config';
+    
+    const intlConfig = config.intl;
+    
+    export const intlList = ['en', 'zh'];
+    
+    export const intlPack = intlConfig;
+    
+    export const intlData = {
+      en,
+      zh
+    };
+
+输出国际化语言列表，语言包列表、react-intl提供的相关data数据
+
+socket日志记录: ./src/universal/socket-log.js
+
+    import { isClient } from './env';
+    
+    const env = isClient ? 'client' : 'server';
+    
+    const prefix = `[socket.io-${env}] `;
+    
+    const log = (ctx) => {
+      if (ctx) {
+        console.log('>>>');
+        console.log(`${prefix}EventType: ${ctx.type}`);
+        console.log(`${prefix}EventName: ${ctx.event}`);
+        console.log(`${prefix}Data Begin:`);
+        console.log(' ');
+        console.log(ctx.data);
+        console.log(' ');
+        console.log(`${prefix}Data End.`);
+        console.log('<<<');
+      }
+    };
+    
+    export default log;
+
+输出socket日志函数，用于on/emit时的记录
+
+静态资源： ./static
+
+服务端用favicon.ico
+PWA用favicon.png
+PWA用index.html
+
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>React Isomorphic Seed</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#00bcd4">
+        <link rel="icon" href="/favicon.png">
+        <link rel="apple-touch-icon" href="/favicon.png">
+        <link rel="manifest" href="/manifest.json">
+        <link rel="canonical" href="https://devlee.io" />
+        <link rel="stylesheet" href="/common.css">
+        <link rel="stylesheet" href="/app.css">
+      </head>
+      <body>
+        <div id="app"></div>
+        <noscript>
+          devlee.io
+        </noscript>
+        <script src="/common.js"></script>
+        <script src="/app.js"></script>
+      </body>
+    </html>
+
+PWA用manifest.json
+
+    {
+      "name": "React Isomorphic PWA",
+      "short_name": "react pwa",
+      "icons": [{
+        "src": "favicon.png",
+        "type": "image/png",
+        "sizes": "192x192"
+      }],
+      "start_url": "/?utm_source=homescreen",
+      "display": "standalone",
+      "background_color": "#ffffff",
+      "theme_color": "#00bcd4"
+    }
+
+### Step 3 创建前后端入口文件
+
+client: ./src/client/index.jsx
+
+    ...
+    
+    window.onload = () => {
+      /* eslint-disable no-underscore-dangle */
+      if (isPwa) {
+        sw.init();
+      }
+    
+      socket.init();
+    
+      const store = configureStore(
+        reducer,
+        window.__INITIAL_STATE__
+      );
+    
+      const state = store.getState();
+    
+      injectTapEventPlugin();
+    
+      render(
+        <Provider store={store}>
+          <Router history={browserHistory}>
+            {route(state)}
+          </Router>
+        </Provider>,
+        document.getElementById('app')
+      );
+    };
+
+前端入口文件，我们需要对相关功能作初始化操作，包括service-worker(PWA mode)，socket，redux store, material-ui tapEvent, react render。
+（可选）如果当前是PWA模式，那么需要执行sw的init，来初始化service worker;
+（可选）socket直接执行init方法即可；
+（可选）如果使用redux，则需要store配置，需要reducer和初始状态集window.__INITIAL_STATE__，该值由服务端渲染到页面的script中；
+（可选）如果使用redux，则需要获取state，利用store的getSate方法获得；
+（可选）如果使用material-ui，则必须执行injectTapEventPlugin方法来注入tagEvent；
+（可选）如果使用intl，Provider从react-intl-redux引入，否则从react-redux引入。
+（可选）如果使用react-router，则需配置history和route
+（必须）render方法必须，第一个参数是组件，第二个参数是挂载的dom对象
+
+> PWA模式：[Progressive Web Apps](https://developers.google.com/web/progressive-web-apps/)
+
+server: ./index.js
+
+    const UniversalWebpack = require('universal-webpack');
+    
+    const config = require('./config/webpack');
+    
+    const settings = require('./config/webpack/setting');
+    
+    UniversalWebpack.server(config, settings);
+
+该文件为服务端启动文件，即可通过node命令直接运行的。UniversalWebpack会通过webpack的配置config和服务端的设置settings来启动服务。
+
+server: ./src/server/index.js
+
+    ...
+    
+    export default () => {
+      let httpsApp;
+      const httpApp = new Koa();
+      const serverConfig = config.server;
+      let app;
+      let options;
+    
+      if (isPwa) {
+        httpsApp = new Koa();
+        app = httpsApp;
+        options = {
+          key: fs.readFileSync(path.resolve(rootFolder, './config/server/ssl/devlee.io.key')),
+          cert: fs.readFileSync(path.resolve(rootFolder, './config/server/ssl/devlee.io.crt'))
+        };
+        httpApp.use(ctx => {
+          ctx.status = 301;
+          ctx.redirect(`https://${ctx.hostname}:${serverConfig[env].ports}${ctx.path}${ctx.search}`);
+          ctx.body = 'Redirecting to https';
+        });
+      } else {
+        app = httpApp;
+      }
+    
+      middleware.intl(app);
+    
+      app.use(middleware.error)
+         .use(middleware.ssl)
+         .use(middleware.favicon)
+         .use(middleware.static)
+         .use(middleware.helper)
+         .use(middleware.navigator)
+         .use(middleware.view)
+         .use(router.routes())
+         .use(router.allowedMethods());
+    
+      if (isPwa) {
+        http.createServer(httpApp.callback()).listen(serverConfig[env].port, () => {
+          console.log(`http app start at port ${serverConfig[env].port}`);
+        });
+        const httpsServer = spdy.createServer(
+          options,
+          httpsApp.callback()
+        );
+        middleware.io(httpsServer);
+        httpsServer.listen(serverConfig[env].ports, () => {
+          console.log(`https app start at port ${serverConfig[env].ports}`);
+        });
+      } else {
+        middleware.io(app);
+        app.listen(serverConfig[env].port, () => {
+          console.log(`http app start at port ${serverConfig[env].port}`);
+        });
+      }
+    };
+
+该文件为主要入口文件，由于需要被UniversalWebpack所使用，所以必须export一个function，在function中写相关代码。
+PWA模式下会启动http和spdy两种服务，spdy（强制https，支持http2），这里的http服务只做强制跳转https作用；
+普通开发模式下只创建http服务；
+两种模式下的koa实例都会加载中间件实现相应的功能，例如route，socket等。
+
