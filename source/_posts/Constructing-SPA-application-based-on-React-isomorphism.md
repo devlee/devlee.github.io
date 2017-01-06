@@ -6,35 +6,8 @@ tags:
 ---
 本文将讲解如何构建基于React同构的SPA应用，涉及到的技术或知识点有如下若干(按字母排序，部分可选)：
 
-> babel
-
-> fetch
-
-> http2
-
-> intl
-
-> isomorphic
-
-> koa
-
-> material-ui
-
-> postcss
-
-> pwa
-
-> react
-
-> redux
-
-> rxjs
-
-> socket.io
-
-> webpack
-
-> ...
+> babel fetch http2 intl isomorphic koa material-ui 
+> postcss pwa react redux rxjs socket.io webpack ...
 
 ### 项目地址
 
@@ -786,3 +759,277 @@ PWA模式下会启动http和spdy两种服务，spdy（强制https，支持http2�
 普通开发模式下只创建http服务；
 两种模式下的koa实例都会加载中间件实现相应的功能，例如route，socket等。
 
+### Step 4 服务端中间件、路由、socket、视图模板搭建
+
+中间件： ./src/server/middleware/index.js
+
+    export default {
+      error,
+      view,
+      favicon,
+      helper,
+      intl,
+      navigator,
+      io,
+      static: serverStatic,
+      ssl,
+      cookie
+    };
+
+输出各分类中间件
+error用于记录服务端错误；
+view用于设置视图引擎；
+favicon用于设置服务器favicon；
+helper用于生成帮助类函数如css、script；
+intl输出koa-locale用于获取locale值；
+navigator用于material-ui配置；
+
+io ./src/server/middleware/io/index.js
+
+    import IO from 'koa-socket';
+    
+    import IO2 from 'socket.io';
+    
+    import socket from '../../socket';
+    
+    import onInit from './on';
+    
+    import { isPwa } from '../../../universal/env';
+    
+    let ioInstance;
+    
+    const io = app => {
+      if (isPwa) {
+        ioInstance = IO2.listen(app);
+        ioInstance.sockets.on('connection', io2 => {
+          socket.init(io2);
+          onInit();
+        });
+      } else {
+        ioInstance = new IO();
+        ioInstance.attach(app);
+        socket.init(ioInstance);
+        onInit();
+      }
+    };
+    
+    export default io;
+
+PWA模式下将直接使用socket.io来初始化；
+非PWA模式使用koa-socket库来初始化；
+onInit方法会初始化socket监听事件；
+
+static用于服务端静态资源配置；
+ssl用于强制跳转https；
+cookie用于koa路由；
+
+路由： ./src/server/route/index.js
+
+    ...
+    
+    const router = new Router();
+    
+    router.use(middleware.cookie);
+    
+    data(router);
+    
+    main(router);
+    
+    export default router;
+
+data为api路由，main为主页面路由
+
+api路由： ./src/server/router/data/index.js
+
+    export default router => {
+      router.get('/test', ctx => {
+        ctx.body = 'test';
+      });
+    };
+
+测试api
+
+主页面路由： ./src/server/router/main/index.js
+
+    ...
+    
+    let injectTapEventPluginFlag = false;
+    
+    function getTasks(renderProps, store) {
+      let tasks = [];
+    
+      Object.keys(renderProps.components).map(component => {
+        if (component && component.WrappedComponent && component.WrappedComponent.fetchData) {
+          const tempTasks = component.WrappedComponent.fetchData(store.getState(),
+            store.dispatch, renderProps.params);
+          if (Array.isArray(tempTasks)) {
+            tasks = tasks.concat(tempTasks);
+          } else if (tempTasks.then) {
+            tasks.push(tempTasks);
+          }
+        }
+    
+        return component;
+      });
+    
+      return tasks;
+    }
+    
+    export default router => {
+      router.get('/*', async ctx => {
+        let matchError;
+        let matchRedirect;
+        let matchProps;
+        let isomorphicHtml;
+    
+        let locale = ctx.getLocaleFromHeader() || 'en';
+    
+        if (!intlPack[locale]) {
+          locale = 'en';
+        }
+    
+        const store = configureStore(reducer, {
+          intl: intlPack[locale]
+        });
+    
+        const state = store.getState();
+    
+        await match({
+          routes: route(state),
+          location: ctx.url
+        }, (err, redirectLocation, renderProps) => {
+          matchError = err;
+          matchRedirect = redirectLocation;
+          matchProps = renderProps;
+        });
+    
+        if (matchProps) {
+          const tasks = getTasks(matchProps, store);
+    
+          await Promise.all(tasks);
+    
+          if (!injectTapEventPluginFlag) {
+            injectTapEventPlugin();
+            injectTapEventPluginFlag = true;
+          }
+    
+          isomorphicHtml = renderToString(
+            <Provider store={store}>
+              <RouterContext {...matchProps} />
+            </Provider>
+          );
+        }
+    
+        if (matchError) {
+          throw matchError;
+        } else if (matchRedirect) {
+          ctx.redirect(matchRedirect.pathname + matchRedirect.search);
+        } else if (isomorphicHtml) {
+          ctx.body = await ctx.render('app', {
+            isomorphicHtml,
+            isomorphicState: state,
+            locale
+          });
+        } else {
+          console.error('there was no route found matching the given location');
+          ctx.redirect('/');
+          ctx.status = 301;
+          ctx.body = 'Redirecting to home page';
+        }
+      });
+    };
+
+仅仅一个get(/*)路由来处理
+
+socket包装： ./src/server/socket/index.js
+
+    import log from '../../universal/socket-log';
+    
+    import { isPwa } from '../../universal/env';
+    
+    const socket = {};
+    
+    let ioInstance = null;
+    
+    const emit = (event, data) => {
+      log({
+        event,
+        data,
+        type: 'emit'
+      });
+    
+      if (isPwa) {
+        ioInstance.emit(event, data);
+      } else {
+        ioInstance.broadcast(event, data);
+      }
+    };
+    
+    const on = (event, cb) => {
+      ioInstance.on(event, cb);
+    };
+    
+    socket.init = io => {
+      if (ioInstance === null || isPwa) {
+        ioInstance = io;
+      }
+    
+      socket.io = ioInstance;
+    
+      if (isPwa) {
+        io.use(async (ctx, next) => {
+          if (ctx && ctx.length > 1) {
+            log({
+              event: ctx[0],
+              data: ctx[1],
+              type: 'on'
+            });
+          }
+          await next();
+        });
+      } else {
+        io.use(async (ctx, next) => {
+          log({
+            event: ctx.event,
+            data: ctx.data,
+            type: 'on'
+          });
+          await next();
+        });
+        socket.init = () => {};
+      }
+    };
+    
+    socket.emit = emit;
+    
+    socket.on = on;
+    
+    export default socket;
+
+视图模板： ./src/server/view/index.twig
+
+    <!DOCTYPE html>
+    <html lang="{{ locale }}">
+      <head>
+        <title>{{ title || 'React Isomorphic Seed' }}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#00bcd4">
+        <link rel="icon" href="/favicon.png">
+        <link rel="apple-touch-icon" href="/favicon.png">
+        <link rel="manifest" href="/manifest.json">
+        <link rel="canonical" href="https://devlee.io" />
+        {{ css('common') }}
+        {{ css('app') }}
+      </head>
+      <body>
+        <div id="app">{{ isomorphicHtml|raw }}</div>
+        <script>
+          window.__INITIAL_STATE__ = {{ isomorphicState|json|raw }};
+        </script>
+        <noscript>
+          devlee.io
+        </noscript>
+        {{ script('common') }}
+        {{ script('app') }}
+      </body>
+    </html>
