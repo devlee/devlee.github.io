@@ -1033,3 +1033,65 @@ socket包装： ./src/server/socket/index.js
         {{ script('app') }}
       </body>
     </html>
+
+### Step 5 客户端根组件及页面级组件
+
+根组件App： ./src/client/component/App/index.jsx
+
+    @connect()
+    @autobind
+    export default class App extends React.PureComponent {
+      static propTypes = {
+        children: React.PropTypes.object,
+        location: React.PropTypes.object
+      };
+    
+      render() {
+        const context = {
+          userAgent: navigator.userAgent || 'all'
+        };
+    
+        const { location, children } = this.props;
+    
+        return (
+          <MuiThemeProvider muiTheme={getMuiTheme(context)}>
+            <div className="root app-component">
+              <Nav location={location} />
+              { children }
+            </div>
+          </MuiThemeProvider>
+        );
+      }
+    }
+
+使用装饰器connect来链接状态管理器redux
+使用装饰器autobind来自动绑定类的方法
+使用material-ui的MuiThemeProvider包装以使用其组件，通过navigator.userAgent来配置组件的样式，即该组件系统会根据用户访问的环境不同而表现出不同的样式（内置）
+
+页面级组件放置目录位于./src/client/container
+
+### Step 6 客户端基础样式及组件样式
+
+基础样式目录： ./src/client/css
+
+common.pcss 中包含了共用样式
+variable.pcss 中包含了样式变量
+其余文件夹内的文件为细分样式类别，包括字体、hack、变量等等，以上两个文件按需从这些类别中引入文件即可
+
+组件样式位置随组件位于同级目录下
+
+### Step 7 客户端路由、 socket、 service-worker
+
+### Step 8 客户端redux、 rxjs、 reselect
+
+### Step 9 附录
+
+[PWA模式下Lighthouse满分截图](/uploads/QQ20161219110624.png)
+
+[PWA模式下模拟器截图1](/uploads/QQ20161219185324.png)
+
+[PWA模式下模拟器截图2](/uploads/QQ20161219185403.png)
+
+[PWA模式下模拟器截图3](/uploads/QQ20161219185436.png)
+
+[PWA模式下模拟器截图4](/uploads/QQ20161219185503.png)
