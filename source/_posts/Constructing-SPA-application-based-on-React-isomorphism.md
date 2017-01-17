@@ -1038,6 +1038,8 @@ socket包装： ./src/server/socket/index.js
 
 根组件App： ./src/client/component/App/index.jsx
 
+    ...
+    
     @connect()
     @autobind
     export default class App extends React.PureComponent {
@@ -1086,12 +1088,12 @@ variable.pcss 中包含了样式变量
 
 ### Step 9 附录
 
-[PWA模式下Lighthouse满分截图](/uploads/QQ20161219110624.png)
+![PWA模式下Lighthouse满分截图](/uploads/QQ20161219110624.png)
 
-[PWA模式下模拟器截图1](/uploads/QQ20161219185324.png)
+![PWA模式下模拟器截图1](/uploads/QQ20161219185324.png)
 
-[PWA模式下模拟器截图2](/uploads/QQ20161219185403.png)
+![PWA模式下模拟器截图2](/uploads/QQ20161219185403.png)
 
-[PWA模式下模拟器截图3](/uploads/QQ20161219185436.png)
+![PWA模式下模拟器截图3](/uploads/QQ20161219185436.png)
 
-[PWA模式下模拟器截图4](/uploads/QQ20161219185503.png)
+![PWA模式下模拟器截图4](/uploads/QQ20161219185503.png)
