@@ -1084,7 +1084,258 @@ variable.pcss 中包含了样式变量
 
 ### Step 7 客户端路由、 socket、 service-worker
 
+路由： ./src/client/route/index.js
+
+    ...
+    
+    const route = () => {
+      return (
+        <Route path="/" component={App}>
+          <IndexRoute component={Home} />
+          <Redirect from="home" to="/" />
+          <Route path="about" component={About} />
+          <Route path="demo" component={Demo}>
+            <Route path=":demoId" component={DemoItem} />
+          </Route>
+        </Route>
+      );
+    };
+    
+    export default route;
+
+定义了“/”为根路由映射到App组件
+定义了默认首页路由映射到Home组件
+重定向了“home”路径映射到根路由
+定义了about、demo页面路由及demo详情页路由
+
+socket包装： ./src/client/socket/index.js
+
+    ...
+    
+    let ioInstance = null;
+    
+    const socket = {};
+    
+    const emit = (event, data) => {
+      log({
+        event,
+        data,
+        type: 'emit'
+      });
+      ioInstance.emit(event, data);
+    };
+    
+    const on = (event, cb) => {
+      ioInstance.on(event, data => {
+        log({
+          event,
+          data,
+          type: 'on'
+        });
+        cb(data);
+      });
+    };
+    
+    socket.init = () => {
+      ioInstance = io();
+    
+      socket.io = ioInstance;
+    
+      onInit();
+    
+      socket.init = () => {};
+    };
+    
+    socket.emit = emit;
+    
+    socket.on = on;
+    
+    export default socket;
+
+类似服务端，对原生socket实例包装以便log
+
+service-worker： ./src/client/service-worker/index.js
+
+    ...
+    
+    const sw = {};
+    
+    sw.init = () => {
+      if (isPwa) {
+        offline.install();
+      }
+    };
+    
+    export default sw;
+
+PWA模式下初始化一下offline-plugin/runtime库
+
 ### Step 8 客户端redux、 rxjs、 reselect
+
+redux/store: ./src/client/store/index.js
+
+    ...
+    
+    const composeEnhancers = isClient ?
+      (window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose) :
+      compose;
+    
+    const epicMiddleware = createEpicMiddleware(epic);
+    
+    const configureStore = isDev ?
+      composeEnhancers(applyMiddleware(
+        epicMiddleware,
+        ReduxLogger()
+      ))(createStore) :
+      applyMiddleware(
+        epicMiddleware
+      )(createStore);
+    
+    export default configureStore;
+
+store配置文件，这里可以加入中间件epic，开发环境还可以加入logger, devtools等
+
+redux/action: ./src/client/action/index.js
+
+    export const TEST_REQUEST = 'TEST_REQUEST';
+    
+    export const TEST_RESPONSE = 'TEST_RESPONSE';
+    
+    export const TEST_CANCEL = 'TEST_CANCEL';
+    
+    export const TEST_ERROR = 'TEST_ERROR';
+    
+    export function testRequest() {
+      return {
+        type: TEST_REQUEST
+      };
+    }
+    
+    export function testResponse() {
+      return {
+        type: TEST_RESPONSE
+      };
+    }
+    
+    export function testCancel() {
+      return {
+        type: TEST_CANCEL
+      };
+    }
+    
+    export function testError() {
+      return {
+        type: TEST_ERROR
+      };
+    }
+
+这些都是测试action
+
+redux/reducer: ./src/client/reducer/index.js
+
+    ...
+    
+    intlList.map(item => {
+      addLocaleData(intlData[item]);
+      return item;
+    });
+    
+    const reducer = combineReducers({
+      intl: intlReducer,
+      socket,
+      test
+    });
+    
+    export default reducer;
+
+这里包装一下所有的reducer
+
+redux/reducer/test: ./src/client/reducer/test.js
+
+    import { TEST_REQUEST, TEST_RESPONSE, TEST_CANCEL, TEST_ERROR } from '../action';
+    
+    export default function (state = {
+      count: 0,
+      fetching: false
+    }, action) {
+      switch (action.type) {
+        case TEST_REQUEST: {
+          return {
+            count: state.count,
+            fetching: true
+          };
+        }
+        case TEST_RESPONSE: {
+          return {
+            count: state.count + 1,
+            fetching: false
+          };
+        }
+        case TEST_CANCEL: {
+          return {
+            count: state.count,
+            fetching: false
+          };
+        }
+        case TEST_ERROR: {
+          return {
+            count: state.count,
+            fetching: false
+          };
+        }
+        default:
+          return state;
+      }
+    }
+
+测试reducer响应相应action的逻辑
+
+rxjs/epic: ./src/client/epic/index.js
+
+    import { combineEpics } from 'redux-observable';
+    
+    import test from './test';
+    
+    const epic = combineEpics(
+      test
+    );
+    
+    export default epic;
+
+这里包装一下所有的epic
+
+rxjs/epic/test: ./src/client/epic/test.js
+
+    import { Observable } from 'rxjs/Observable';
+    
+    import { TEST_REQUEST, TEST_CANCEL, testResponse } from '../action';
+    
+    import socket from '../socket';
+    
+    export default function (action$) {
+      return action$
+        .ofType(TEST_REQUEST)
+        .switchMap(() => {
+          socket.emit('data', {
+            test: 'io'
+          });
+          return Observable
+            .fromEvent(socket.io, 'data')
+            .filter(data => typeof data.test !== 'undefined')
+            .delay(800)
+            .mapTo(testResponse())
+            .takeUntil(action$.ofType(TEST_CANCEL));
+        });
+    }
+
+测试epic响应及触发相应action的逻辑：
+响应TEST_REQUEST
+触发socket对象的emit方法
+监听socket.io对象的data方法
+过滤数据
+延迟800ms
+触发testResponse
+除非在延迟期间有TEST_CANCEL被触发
 
 ### Step 9 附录
 
