@@ -1,0 +1,1324 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="docker," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="本文主要介绍了Docker在Ubuntu上的主要应用，并详细的阐述了实现步骤、遇到的问题及问题的解决方案。新手可以先了解一下它们，老鸟可以直接跳过下面的若干步骤，废话不多说，开始吧~
+我们要做什么明确目标很关键，我们的主要目标就是基于Docker来完成以下工作
+
+建立私有的gitlab
+建立私有的docker registry
+通过gitlab-ci来自动化build，test，push，depl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker On Ubuntu">
+<meta property="og:url" content="http://logit.space/2016/09/18/Docker-On-Ubuntu/index.html">
+<meta property="og:site_name" content="iJuJu">
+<meta property="og:description" content="本文主要介绍了Docker在Ubuntu上的主要应用，并详细的阐述了实现步骤、遇到的问题及问题的解决方案。新手可以先了解一下它们，老鸟可以直接跳过下面的若干步骤，废话不多说，开始吧~
+我们要做什么明确目标很关键，我们的主要目标就是基于Docker来完成以下工作
+
+建立私有的gitlab
+建立私有的docker registry
+通过gitlab-ci来自动化build，test，push，depl">
+<meta property="og:updated_time" content="2017-01-18T06:47:01.716Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker On Ubuntu">
+<meta name="twitter:description" content="本文主要介绍了Docker在Ubuntu上的主要应用，并详细的阐述了实现步骤、遇到的问题及问题的解决方案。新手可以先了解一下它们，老鸟可以直接跳过下面的若干步骤，废话不多说，开始吧~
+我们要做什么明确目标很关键，我们的主要目标就是基于Docker来完成以下工作
+
+建立私有的gitlab
+建立私有的docker registry
+通过gitlab-ci来自动化build，test，push，depl">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Docker On Ubuntu | iJuJu </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?08fe328dbbd27892d9d9c059f467f8dd";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">iJuJu</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">byLieLie</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Docker On Ubuntu
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-09-18T11:18:56+00:00" content="2016-09-18">
+              2016-09-18
+            </time>
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+             <span id="/2016/09/18/Docker-On-Ubuntu/" class="leancloud_visitors" data-flag-title="Docker On Ubuntu">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文主要介绍了<a href="https://www.docker.com" target="_blank" rel="external"><strong>Docker</strong></a>在<a href="http://www.ubuntu.com/" target="_blank" rel="external"><strong>Ubuntu</strong></a>上的主要应用，并详细的阐述了实现步骤、遇到的问题及问题的解决方案。新手可以先了解一下它们，老鸟可以直接跳过下面的若干步骤，废话不多说，开始吧~</p>
+<h3 id="我们要做什么"><a href="#我们要做什么" class="headerlink" title="我们要做什么"></a>我们要做什么</h3><p>明确目标很关键，我们的主要目标就是<strong>基于Docker</strong>来完成以下工作</p>
+<blockquote>
+<p>建立私有的gitlab</p>
+<p>建立私有的docker registry</p>
+<p>通过gitlab-ci来自动化build，test，push，deploy我们的项目</p>
+<p>利用集群部署我们的服务</p>
+</blockquote>
+<h3 id="环境参数"><a href="#环境参数" class="headerlink" title="环境参数"></a>环境参数</h3><blockquote>
+<p><strong>系统软件:</strong></p>
+<ul>
+<li><p><strong>ubuntu</strong> <a href="http://www.ubuntu.com/download/desktop" target="_blank" rel="external">16.04 LTS</a></p>
+</li>
+<li><p><strong>docker</strong> <a href="https://docs.docker.com/engine/installation/linux/ubuntulinux/" target="_blank" rel="external">1.12</a></p>
+</li>
+<li><p><strong>docker compose</strong> <a href="https://github.com/docker/compose/releases" target="_blank" rel="external">1.8.0-rc2</a></p>
+</li>
+<li><p><strong>docker machine</strong> <a href="https://github.com/docker/machine/releases" target="_blank" rel="external">0.8.0-rc2</a></p>
+</li>
+</ul>
+</blockquote>
+<h3 id="文档说明"><a href="#文档说明" class="headerlink" title="文档说明"></a>文档说明</h3><blockquote>
+<p><strong>名词解释:</strong></p>
+<ul>
+<li><p><strong>主机 :</strong> 安装<strong>ubuntu</strong>的机器，可以是物理机也可以是虚拟机</p>
+</li>
+<li><p><strong>主机ip :</strong> <strong><code>主机</code></strong> 的ip，可通过 <strong><code>ifconfig</code></strong> 命令获取</p>
+</li>
+<li><p><strong>其他主机 :</strong> 安装有<strong>Docker</strong>的其他 <strong><code>主机</code></strong></p>
+</li>
+<li><p><strong>docker0 :</strong> <strong>Docker</strong>服务默认创建的网桥名</p>
+</li>
+<li><p><strong>&lt;username&gt; :</strong> 你的用户名，我这里使用自己的用户名<strong>devlee</strong></p>
+</li>
+<li><p><strong>工作目录 :</strong> <code>主机</code>上进行本文描述的相关工作的工作目录</p>
+</li>
+<li><p><strong>我的项目 :</strong> 我把这篇文章中涉及的代码总结于此项目</p>
+</li>
+</ul>
+<p><strong>相关说明:</strong></p>
+<ul>
+<li><p>大多数命令需要root权限，可以通过以下命令来解决每次都需要sudo的步骤</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&gt;   $ sudo -i</div><div class="line">&gt;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><strong>工作目录:</strong></p>
+<ul>
+<li>/work/&lt;username&gt;</li>
+</ul>
+<p><strong>我的项目:</strong></p>
+<ul>
+<li><a href="https://github.com/devlee/docker-aio" target="_blank" rel="external">docker-aio</a></li>
+</ul>
+</blockquote>
+<h3 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h3><ol>
+<li><p>创建好 <strong><code>工作目录</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo mkdir /work/devlee</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>Tip:</strong> 准备工作到第一步就可以了，因为后续步骤会创建若干目录及文件，如果你想偷懒，不愿意一步一步创建这些目录及文件，可以继续准备工作的后续几步。</p>
+</blockquote>
+</li>
+<li><p>进入<strong><code>工作目录</code></strong>并拉取<strong><code>我的项目</code></strong>，该项目中拥有一些我们下面操作中需要的文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo cd /work/devlee &amp;&amp; git clone https://github.com/devlee/docker-aio.git</div></pre></td></tr></table></figure>
+</li>
+<li><p>将项目中src中的所有文件夹拷贝至<strong><code>工作目录</code></strong>下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo cp -r /work/devlee/docker-aio/src /work/devlee</div></pre></td></tr></table></figure>
+</li>
+<li><p>此时查看<strong><code>工作目录</code></strong>，应该拥有 <strong><code>gitlab</code></strong>，<strong><code>registry</code></strong>，<strong><code>machine</code></strong>等文件夹</p>
+</li>
+</ol>
+<h3 id="更新APT资源列表"><a href="#更新APT资源列表" class="headerlink" title="更新APT资源列表"></a>更新APT资源列表</h3><ol>
+<li><p>在 <strong><code>主机</code></strong> 上使用 <strong><code>root</code></strong> 权限或 <strong><code>sudo</code></strong> 命令来执行以下命令</p>
+</li>
+<li><p>打开一个 <strong><code>terminal</code></strong></p>
+</li>
+<li><p>更新包信息，确保 <strong><code>APT</code></strong> 使用 <strong><code>https</code></strong> 方式工作且安装了 <strong><code>CA</code></strong> 证书</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get update</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get install apt-transport-https ca-certificates</div></pre></td></tr></table></figure>
+</li>
+<li><p>添加新的 <strong><code>GPG</code></strong> key</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D</div></pre></td></tr></table></figure>
+</li>
+<li><p>使用你最喜欢的编辑器来打开以下文件，不存在则创建它</p>
+<blockquote>
+<p>/etc/apt/sources.list.d/docker.list</p>
+</blockquote>
+</li>
+<li><p>清空所有已经存在的 <strong><code>entry</code></strong>，并添加一条新的 <strong><code>entry</code></strong></p>
+<blockquote>
+<p>deb <a href="https://apt.dockerproject.org/repo" target="_blank" rel="external">https://apt.dockerproject.org/repo</a> ubuntu-xenial main</p>
+</blockquote>
+</li>
+<li><p>保存并关闭该文件</p>
+<blockquote>
+<p><strong>Tip:</strong> <code>5</code> , <code>6</code> 和 <code>7</code> 这三个步骤可以通过以下命令实现</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">sh -c &quot;echo deb https://apt.dockerproject.org/repo ubuntu-xenial main &gt; /etc/apt/sources.list.d/docker.list&quot;</div></pre></td></tr></table></figure>
+</blockquote>
+</li>
+<li><p>更新 <strong><code>APT</code></strong> 包索引</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get update</div></pre></td></tr></table></figure>
+</li>
+<li><p>如果存在则先卸载旧有版本</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get purge lxc-docker</div></pre></td></tr></table></figure>
+</li>
+<li><p>验证 <strong><code>APT</code></strong> 从正确的仓库中拉取</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-cache policy docker-engine</div></pre></td></tr></table></figure>
+</li>
+<li><p>执行以下命令，获取软件最新版本</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get upgrade</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>Tip:</strong> <code>upgrade</code> 命令会更新所有软件包</p>
+</blockquote>
+</li>
+</ol>
+<h3 id="ubuntu安装docker之前的准备"><a href="#ubuntu安装docker之前的准备" class="headerlink" title="ubuntu安装docker之前的准备"></a>ubuntu安装docker之前的准备</h3><ol>
+<li><p>在 <strong><code>主机</code></strong> 上打开一个 <strong><code>terminal</code></strong></p>
+</li>
+<li><p>更新包管理器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get update</div></pre></td></tr></table></figure>
+</li>
+<li><p>安装推荐的包</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get install linux-image-extra-$(uname -r)</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="安装docker"><a href="#安装docker" class="headerlink" title="安装docker"></a>安装docker</h3><ol>
+<li><p>在 <strong><code>主机</code></strong> 上使用 <strong><code>sudo</code></strong></p>
+</li>
+<li><p>更新 <strong><code>APT</code></strong> 包索引</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get update</div></pre></td></tr></table></figure>
+</li>
+<li><p>安装 <strong><code>docker</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get install docker-engine</div></pre></td></tr></table></figure>
+</li>
+<li><p>启动 <strong><code>docker</code></strong> daemon</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo service docker start</div></pre></td></tr></table></figure>
+</li>
+<li><p>验证 <strong><code>docker</code></strong> 安装正确</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo docker run hello-world</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>Tip:</strong> 这个命令会下载一个测试镜像并在容器中运行它，当容器运行时，它会在控制台打印出一条消息，随后便会结束退出。</p>
+</blockquote>
+</li>
+</ol>
+<h3 id="安装docker-compose"><a href="#安装docker-compose" class="headerlink" title="安装docker compose"></a>安装docker compose</h3><ol>
+<li><p>打开以下链接</p>
+<blockquote>
+<p><a href="https://github.com/docker/compose/releases" target="_blank" rel="external">https://github.com/docker/compose/releases</a></p>
+</blockquote>
+</li>
+<li><p>在页面中找到这样的命令并运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">curl -L https://github.com/docker/compose/releases/download/1.8.0-rc2/docker-compose-`uname -s`-`uname -m` &gt; /usr/local/bin/docker-compose</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">chmod +x /usr/local/bin/docker-compose</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="安装docker-machine"><a href="#安装docker-machine" class="headerlink" title="安装docker machine"></a>安装docker machine</h3><ol>
+<li><p>打开以下链接</p>
+<blockquote>
+<p><a href="https://github.com/docker/machine/releases" target="_blank" rel="external">https://github.com/docker/machine/releases</a></p>
+</blockquote>
+</li>
+<li><p>在页面中找到这样的命令并运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">curl -L https://github.com/docker/machine/releases/download/v0.8.0-rc2/docker-machine-`uname -s`-`uname -m` &gt;/usr/local/bin/docker-machine</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">chmod +x /usr/local/bin/docker-machine</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="校验一下版本信息"><a href="#校验一下版本信息" class="headerlink" title="校验一下版本信息"></a>校验一下版本信息</h3><ol>
+<li><p>执行以下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker version</div></pre></td></tr></table></figure>
+<p>得到 <strong><code>docker</code></strong> 的版本信息，包括 <strong><code>客户端</code></strong> 和 <strong><code>服务端</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">Client:</div><div class="line"> Version:      1.12.0</div><div class="line"> API version:  1.24</div><div class="line"> Go version:   go1.6.3</div><div class="line"> Git commit:   8eab29e</div><div class="line"> Built:        Thu Jul 28 22:11:10 2016</div><div class="line"> OS/Arch:      linux/amd64</div><div class="line">Server:</div><div class="line"> Version:      1.12.0</div><div class="line"> API version:  1.24</div><div class="line"> Go version:   go1.6.3</div><div class="line"> Git commit:   8eab29e</div><div class="line"> Built:        Thu Jul 28 22:11:10 2016</div><div class="line"> OS/Arch:      linux/amd64</div></pre></td></tr></table></figure>
+</li>
+<li><p>执行以下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker-compose version</div></pre></td></tr></table></figure>
+<p>得到 <strong><code>docker compose</code></strong> 当前版本信息，包括 <strong><code>py</code></strong> ,  <strong><code>ssl</code></strong> 等信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">docker-compose version 1.8.0-rc2, build c72c966</div><div class="line">docker-py version: 1.9.0-rc2</div><div class="line">CPython version: 2.7.9</div><div class="line">OpenSSL version: OpenSSL 1.0.1e 11 Feb 2013</div></pre></td></tr></table></figure>
+</li>
+<li><p>执行以下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker-machine version</div></pre></td></tr></table></figure>
+<p>得到 <strong><code>docker machine</code></strong> 当前版本信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker-machine version 0.8.0-rc2, build 4ca1b85</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="搭建私有的gitlab"><a href="#搭建私有的gitlab" class="headerlink" title="搭建私有的gitlab"></a>搭建私有的gitlab</h3><ol>
+<li><p>进入<strong><code>工作目录</code></strong>，创建文件夹<strong><code>gitlab</code></strong>，并进入该目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo cd /work/devlee &amp;&amp; mkdir gitlab &amp;&amp; cd gitlab</div></pre></td></tr></table></figure>
+</li>
+<li><p>创建docker-compose.yml，并将以下链接中的代码拷贝至该文件中</p>
+<blockquote>
+<p><a href="https://raw.githubusercontent.com/sameersbn/docker-gitlab/master/docker-compose.yml" target="_blank" rel="external">https://raw.githubusercontent.com/sameersbn/docker-gitlab/master/docker-compose.yml</a><br><strong>Tip:</strong> 与我的项目中的文件内容有些许差异，主要是<strong>镜像版本号</strong>和<strong>容器</strong> <strong><code>container_name</code></strong> 的定义</p>
+</blockquote>
+</li>
+<li><p>执行以下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo docker-compose up -d</div></pre></td></tr></table></figure>
+</li>
+<li><p>搭建完成，访问以下地址进行初始化并重置 <strong><code>root</code></strong> 密码</p>
+<blockquote>
+<p><a href="http://localhost:10080" target="_blank" rel="external">http://localhost:10080</a></p>
+</blockquote>
+</li>
+</ol>
+<h3 id="搭建私有的docker-registry"><a href="#搭建私有的docker-registry" class="headerlink" title="搭建私有的docker registry"></a>搭建私有的docker registry</h3><blockquote>
+<p><strong>Tip:</strong></p>
+<ol>
+<li><p>这里的 <strong><code>registry</code></strong> 版本为 <strong><code>v2</code></strong> ，隶属于 <strong><code>docker distribution</code></strong> 项目，项目地址为：<a href="https://github.com/docker/distribution" target="_blank" rel="external">https://github.com/docker/distribution</a></p>
+</li>
+<li><p>我们同时会利用 <strong><code>nginx</code></strong> 来实现 <strong><code>https</code></strong> 仓库</p>
+</li>
+<li><p>我们会使用 <strong><code>docker-registry-frontend</code></strong> 来作为web前端展示</p>
+</li>
+</ol>
+</blockquote>
+<ol>
+<li><p>进入<strong><code>工作目录</code></strong>，创建文件夹<strong><code>registry</code></strong>，并进入该目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo cd /work/devlee &amp;&amp; mkdir registry &amp;&amp; cd registry</div></pre></td></tr></table></figure>
+</li>
+<li><p>创建docker-compose.yml文件，并写入以下代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">version: &apos;2&apos;</div><div class="line">services:</div><div class="line">  nginx:</div><div class="line">    restart: always</div><div class="line">    image: &apos;nginx:latest&apos;</div><div class="line">    ports:</div><div class="line">      - 443:443</div><div class="line">    links:</div><div class="line">      - registry:registry</div><div class="line">    volumes:</div><div class="line">      - ./nginx/:/etc/nginx/conf.d</div><div class="line">    container_name: &apos;docker-registry-proxy&apos;</div><div class="line">  registry:</div><div class="line">    restart: always</div><div class="line">    image: &apos;registry:2.4.1&apos;</div><div class="line">    ports:</div><div class="line">      - 5000:5000</div><div class="line">    environment:</div><div class="line">      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/data</div><div class="line">    volumes:</div><div class="line">      - ./data:/data</div><div class="line">    container_name: &apos;docker-registry&apos;</div><div class="line">  frontend:</div><div class="line">    restart: always</div><div class="line">    image: &apos;konradkleine/docker-registry-frontend:v2&apos;</div><div class="line">    ports:</div><div class="line">      - 8080:80</div><div class="line">    environment:</div><div class="line">      - ENV_DOCKER_REGISTRY_HOST=nginx</div><div class="line">      - ENV_DOCKER_REGISTRY_PORT=443</div><div class="line">      - ENV_DOCKER_REGISTRY_USE_SSL=1</div><div class="line">    links:</div><div class="line">      - nginx:nginx</div><div class="line">    container_name: &apos;docker-registry-frontend&apos;</div></pre></td></tr></table></figure>
+</li>
+<li><p>创建文件夹data和nginx，并进入nginx文件夹</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo mkdir data &amp;&amp; mkdir nginx &amp;&amp; cd nginx</div></pre></td></tr></table></figure>
+</li>
+<li><p>创建registry.conf文件，并写入以下代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">upstream docker-hub &#123;</div><div class="line">  server registry:5000;</div><div class="line">&#125;</div><div class="line"></div><div class="line">server &#123;</div><div class="line">  listen 443;</div><div class="line">  server_name localhost;</div><div class="line"></div><div class="line">  # SSL</div><div class="line">  ssl on;</div><div class="line">  ssl_certificate /etc/nginx/conf.d/docker-registry.crt;</div><div class="line">  ssl_certificate_key /etc/nginx/conf.d/docker-registry.key;</div><div class="line"></div><div class="line">  # disable any limits to avoid HTTP 413 for large image uploads</div><div class="line">  client_max_body_size 0;</div><div class="line"></div><div class="line">  # required to avoid HTTP 411: see Issue #1486 (https://github.com/docker/docker/issues/1486)</div><div class="line">  chunked_transfer_encoding on;</div><div class="line"></div><div class="line">  location /v2/ &#123;</div><div class="line">    # Do not allow connections from docker 1.5 and earlier</div><div class="line">    # docker pre-1.6.0 did not properly set the user agent on ping, catch &quot;Go *&quot; user agents</div><div class="line">    if ($http_user_agent ~ &quot;^(docker\/1\.(3|4|5(?!\.[0-9]-dev))|Go ).*$&quot; ) &#123;</div><div class="line">    return 404;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    # To add basic authentication to v2 use auth_basic setting plus add_header</div><div class="line">    auth_basic &quot;registry.localhost&quot;;</div><div class="line">    auth_basic_user_file /etc/nginx/conf.d/docker-registry.htpasswd;</div><div class="line">    add_header &apos;Docker-Distribution-Api-Version&apos; &apos;registry/2.4.1&apos; always;</div><div class="line"></div><div class="line">    proxy_pass http://docker-hub;</div><div class="line">    proxy_set_header Host $http_host; # required for docker client&apos;s sake</div><div class="line">    proxy_set_header X-Real-IP $remote_addr; # pass on real client&apos;s IP</div><div class="line">    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</div><div class="line">    proxy_set_header X-Forwarded-Proto $scheme;</div><div class="line">    proxy_read_timeout 900;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p>生成 <strong><code>ssl</code></strong> 证书</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo openssl req -x509 -nodes -newkey rsa:2048 -keyout /work/devlee/registry/nginx/docker-registry.key -out /work/devlee/registry/nginx/docker-registry.crt</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>Tip:</strong> 生成证书的时候需要格外注意，所有选型除了 <strong><code>CN</code></strong> 都可以选择默认，这个选项需要输入仓库的域名，由于我们是本地内网所以输入 <strong><code>docker-registry</code></strong> ，记得要在其他主机的 <strong><code>/etc/hosts</code></strong> 中添加解析，通过 <strong><code>ifconfig</code></strong> 命令可以查看 <strong><code>主机</code></strong> 的 <strong><code>ip</code></strong></p>
+</blockquote>
+</li>
+<li><p>安装 <strong><code>htpasswd</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get install apache2-utils</div></pre></td></tr></table></figure>
+</li>
+<li><p>创建用户名密码，这里用户名是 <strong><code>devlee</code></strong> ，第一个用户需要添加 <strong><code>-c</code></strong> 参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo htpasswd -c /work/devlee/registry/nginx/docker-registry.htpasswd devlee</div></pre></td></tr></table></figure>
+</li>
+<li><p>启动服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo cd /work/devlee/registry &amp;&amp; docker-compose up -d</div></pre></td></tr></table></figure>
+</li>
+<li><p>搭建完成，访问以下地址进行验证，登录后会返回 <strong><code>{}</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">https://localhost:443/v2</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>Tip:</strong> 目前所搭建的仓库是在主机上进行访问的，可以直接通过 <strong><code>localhost</code></strong> 访问，要在 <strong><code>其他主机</code></strong> 上访问仓库，需要 <strong><code>其他主机</code></strong> 配置有证书 <strong><code>/work/devlee/registry/nginx/docker-registry.crt</code></strong> ，且需要设置 <strong><code>/etc/hosts</code></strong> (别名访问)，通过域名或别名进行访问，<strong><code>https://docker-registry:443/v2</code></strong></p>
+</blockquote>
+</li>
+<li><p>在 <strong><code>其他主机</code></strong> 上配置证书 （内网配置，如果仓库在外网，不用配置hosts）<br>a. 配置 <strong><code>/etc/hosts</code></strong> ，假设 <strong><code>主机ip</code></strong> 为 <strong><code>10.12.30.52</code></strong> ，写入</p>
+<blockquote>
+<p>10.12.30.52 docker-registry</p>
+</blockquote>
+<p>b. 启动<strong>Docker</strong>服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo service docker start</div></pre></td></tr></table></figure>
+<p>c. 创建扩展证书存放目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo mkdir /usr/share/ca-certificates/extra</div></pre></td></tr></table></figure>
+<p>d. 拷贝 <strong><code>主机</code></strong> 中的 <strong><code>docker-registry.crt</code></strong> 文件至上述目录</p>
+<p>e. 注册证书</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo dpkg-reconfigure ca-certificates</div></pre></td></tr></table></figure>
+</li>
+<li><p>在 <strong><code>其他主机</code></strong> 上配置证书（方法2）<br>a. 配置 <strong><code>/etc/hosts</code></strong> ，假设 <strong><code>主机ip</code></strong> 为 <strong><code>10.12.30.52</code></strong> ，写入</p>
+<blockquote>
+<p>10.12.30.52 docker-registry</p>
+</blockquote>
+<p>b. 创建目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo cd /etc/docker &amp;&amp; mkdir cert.d &amp;&amp; cd cert.d &amp;&amp; mkdir docker-registry:443</div></pre></td></tr></table></figure>
+<p>c. 拷贝 <strong><code>主机</code></strong> 中的 <strong><code>docker-registry.crt</code></strong> 文件至上述最后一个创建的目录</p>
+<p>d. 重启<strong>Docker</strong>服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo service docker restart</div></pre></td></tr></table></figure>
+</li>
+<li><p>推送测试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ sudo docker tag hello-world docker-registry:443/hello</div><div class="line">$ sudo docker push docker-registry:443/hello</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="搭建gitlab-runner"><a href="#搭建gitlab-runner" class="headerlink" title="搭建gitlab-runner"></a>搭建gitlab-runner</h3><ol>
+<li><p>向 <strong><code>/work/devlee/gitlab/docker-compose.yml</code></strong> 添加以下代码</p>
+<p> runner-docker-in-docker:</p>
+<pre><code>    restart: always
+    image: sameersbn/gitlab-ci-multi-runner:latest
+    depends_on:
+      - gitlab
+    volumes:
+      - /srv/docker/gitlab-runner/docker-in-docker:/home/gitlab_ci_multi_runner/data
+    links:
+      - gitlab:gitlab
+    environment:
+        - CI_SERVER_URL=http://&lt;gitlab-ip&gt;:10080/ci
+        - RUNNER_TOKEN=&lt;gitlab-token&gt;
+        - RUNNER_DESCRIPTION=docker-in-docker-runner
+        - RUNNER_EXECUTOR=docker
+        - DOCKER_IMAGE=docker:latest
+        - DOCKER_PRIVILEGED=true
+        - DOCKER_EXTRA_HOSTS=localhost:&lt;registry-ip&gt;
+    container_name: gitlab-runner-docker-in-docker
+
+runner-docker-socket-binding:
+    restart: always
+    image: sameersbn/gitlab-ci-multi-runner:latest
+    depends_on:
+      - gitlab
+    volumes:
+        - /srv/docker/gitlab-runner/docker-socket-binding:/home/gitlab_ci_multi_runner/data
+        - /var/run/docker.sock:/var/run/docker.sock
+        - /git/devlee/registry/nginx/volumes:/etc/docker/cert.d
+    links:
+      - gitlab:gitlab
+    environment:
+        - CI_SERVER_URL=http://&lt;gitlab-ip&gt;:10080/ci
+        - RUNNER_TOKEN=&lt;gitlab-token&gt;
+        - RUNNER_DESCRIPTION=docker-socket-binding-runner
+        - RUNNER_EXECUTOR=docker
+        - DOCKER_IMAGE=docker:latest
+        - DOCKER_EXTRA_HOSTS=localhost:&lt;registry-ip&gt;
+        - DOCKER_VOLUMES=/git/devlee/registry/nginx/volumes:/etc/docker/cert.d
+    container_name: gitlab-runner-docker-socket-binding
+    extra_hosts:
+        - &quot;localhost:172.17.0.1&quot;
+        - &quot;docker-registry:172.17.0.1&quot;
+
+runner-shell:
+    restart: always
+    image: sameersbn/gitlab-ci-multi-runner:latest
+    depends_on:
+      - gitlab
+    volumes:
+      - /srv/docker/gitlab-runner/shell:/home/gitlab_ci_multi_runner/data
+    links:
+      - gitlab:gitlab
+    environment:
+        - CI_SERVER_URL=http://&lt;gitlab-ip&gt;:10080/ci
+        - RUNNER_TOKEN=&lt;gitlab-token&gt;
+        - RUNNER_DESCRIPTION=shell-runner
+        - RUNNER_EXECUTOR=shell
+    container_name: gitlab-runner-shell
+</code></pre><blockquote>
+<p><strong>Tip:</strong><br><strong>&lt;gitlab-ip&gt;</strong>: 私有的gitlab服务ip，由于我们是搭建在容器里的，所以这里取 <strong><code>主机</code></strong> 的 <strong><code>docker0</code></strong> 的 <strong><code>ip</code></strong><br><strong>&lt;gitlab-token&gt;</strong>: 这里的token可以填gitlab上某个项目的 <strong><code>special token</code></strong> ，也可以是 <strong><code>shared token</code></strong> ，我这里用的是 <strong><code>shared token</code></strong> ，使用 <strong><code>admin</code></strong> 账户登录gitlab，访问 <strong><code>loalhost:10080/admin/runners</code></strong> 就可以看到token<br><strong>&lt;registry-ip&gt;</strong>: 私有的registry服务ip，由于我们是搭建在容器里的，所以这里取 <strong><code>主机</code></strong> 的 <strong><code>docker0</code></strong> 的 <strong><code>ip</code></strong></p>
+</blockquote>
+</li>
+<li><p>启动服务</p>
+<p> $ sudo cd /work/devlee/gitlab &amp;&amp; docker-compose up -d</p>
+</li>
+<li><p>打开gitlab，使用admin账户登录，在runners页面中给这三个runner添加tag，分别为 <strong><code>docker</code></strong> , <strong><code>sock</code></strong> , <strong><code>shell</code></strong></p>
+</li>
+</ol>
+<h3 id="新建项目koa-app于私有的gitlab"><a href="#新建项目koa-app于私有的gitlab" class="headerlink" title="新建项目koa-app于私有的gitlab"></a>新建项目koa-app于私有的gitlab</h3><ol>
+<li><p>用 <strong><code>admin</code></strong> 账户在 <strong><code>gitlab</code></strong> 上新建一个 <strong><code>koa-app</code></strong> 项目</p>
+</li>
+<li><p>进入 <strong><code>工作目录</code></strong> ，创建文件夹 <strong><code>dev</code></strong> ，并进入该目录</p>
+</li>
+<li><p>拷贝我们的项目至本地</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo git clone http://localhost:10080/root/koa-app.git</div></pre></td></tr></table></figure>
+</li>
+<li><p>进入我们的项目目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo cd koa-app</div></pre></td></tr></table></figure>
+</li>
+<li><p>安装 <strong><code>npm</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ sudo apt-get install python-software-properties</div><div class="line">$ sudo add-apt-repository ppa:gias-kay-lee/npm</div><div class="line">$ sudo apt-get update</div><div class="line">$ sudo apt-get install npm</div></pre></td></tr></table></figure>
+</li>
+<li><p>创建 <strong><code>package.json</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo npm init</div></pre></td></tr></table></figure>
+</li>
+<li><p>安装 <strong><code>koa2</code></strong></p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ sudo npm install koa@2 --save</div></pre></td></tr></table></figure>
+</li>
+<li><p>创建 <strong><code>index.js</code></strong> ，代码如下</p>
+<p> const Koa = require(‘koa’)</p>
+<p> const app = new Koa</p>
+<p> app.use(ctx =&gt; {</p>
+<pre><code>ctx.body = &apos;Hello, Docker&apos;
+</code></pre><p>   })</p>
+<p>   app.listen(3232)</p>
+</li>
+<li><p>创建 <strong><code>.dockerignore</code></strong> ，内容如下</p>
+<blockquote>
+<p>.git</p>
+<p>.gitlab-ci.yml</p>
+<p>README.md</p>
+</blockquote>
+</li>
+<li><p>创建 <strong><code>.gitignore</code></strong> ，内容如下</p>
+<blockquote>
+<p>node_modules</p>
+</blockquote>
+</li>
+<li><p>创建 <strong><code>.gitlab-ci.yml</code></strong> ，内容如下</p>
+<p>image: docker:latest</p>
+<p>  before_script:</p>
+<pre><code>- docker version
+
+build:image
+  stage: build
+    script:
+      - docker login -u devlee -p xxxx localhost:443
+      - docker build -t localhost:443/devlee/koa-app:latest .
+      - docker push localhost:443/devlee/koa-app:latest
+    tags:
+      - sock
+</code></pre><blockquote>
+<p><strong>Tip:</strong> <strong>xxxx</strong>是创建用户 <strong><code>devlee</code></strong> 时输入的密码</p>
+</blockquote>
+</li>
+<li><p>创建 <strong><code>Dockerfile</code></strong> ，内容如下</p>
+<p>FROM localhost:443/devlee/node:latest</p>
+<pre><code>COPY . /devlee/
+WORKDIR /devlee/
+RUN npm install
+CMD [&quot;node&quot;, &quot;index&quot;]
+EXPOSE 3232
+</code></pre></li>
+<li><p>提交代码到gitlab</p>
+<p>  $ sudo git add –all</p>
+<pre><code>$ sudo git commit -m &quot;xxxx&quot;
+$ sudo git fetch
+$ sudo git rebase
+$ sudo git push
+</code></pre><blockquote>
+<p><strong>Tip:</strong> <strong>xxxx</strong>是提交的修改注释</p>
+</blockquote>
+</li>
+<li><p>由于提交的代码中包含了.gitlab-ci.yml文件，会自动触发ci相关任务。</p>
+</li>
+</ol>
+<h3 id="集群部署服务koa-app"><a href="#集群部署服务koa-app" class="headerlink" title="集群部署服务koa-app"></a>集群部署服务koa-app</h3><ol>
+<li><p>我们利用虚拟机当集群节点，所以需要安装 <strong><code>virtualbox</code></strong></p>
+<p> $ sudo sh -c “echo deb <a href="http://download.virtualbox.org/virtualbox/debian" target="_blank" rel="external">http://download.virtualbox.org/virtualbox/debian</a> xenial contrib &gt; /etc/apt/sources.list”</p>
+<pre><code>$ sudo wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+$ sudo wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
+$ sudo apt-get update
+$ sudo apt-get install virtualbox-5.1
+</code></pre></li>
+<li><p>创建三台虚拟机 <strong><code>manager1</code></strong> <strong><code>worker1</code></strong> <strong><code>worker2</code></strong></p>
+<p> $ sudo docker-machine create -d virtualbox manager1</p>
+<pre><code>$ sudo docker-machine create -d virtualbox worker1
+$ sudo docker-machine create -d virtualbox worker2
+</code></pre></li>
+<li><p>创建swarm及manager</p>
+<p> $ sudo docker-machine ssh manager1</p>
+<pre><code>$ sudo docker swarm init --advertise-addr &lt;MANAGER-IP&gt;
+</code></pre></li>
+<li><p>创建worker1和worker2，分别ssh到worker1及worker2执行以下命令，该命令在上条命令执行后会展示</p>
+<p> $ sudo docker swarm join –token <token> <manager-ip>:2377</manager-ip></token></p>
+</li>
+<li><p>登录虚拟机manager1(worker1/2，三个节点都执行一遍6-11操作)</p>
+<p>   $ sudo docker-machine ssh manager1</p>
+<pre><code>$ sudo docker-machine ssh worker1
+$ sudo docker-machine ssh worker2
+</code></pre></li>
+<li><p>在 <strong><code>/etc/hosts</code></strong> 文件中加入 <strong><code>registry</code></strong> 的解析</p>
+<blockquote>
+<p>192.168.99.1 docker-registry</p>
+<p><strong>Tip:</strong> <strong><code>192.168.99.1</code></strong> 是 <strong><code>registry</code></strong> 所在 <strong><code>主机</code></strong> 的 <strong><code>vboxnet0</code></strong> 的ip，也就是主机相对于虚拟机能访问到的ip地址</p>
+</blockquote>
+</li>
+<li><p>创建 <strong><code>/etc/docker/certs.d/docker-registry:443/docker-registry.crt</code></strong> 文件，写入和之前搭建私有的gitlab中的crt文件内容即可</p>
+</li>
+<li><p>重启docker服务</p>
+<p>   $ sudo /etc/init.d/docker stop</p>
+<pre><code>$ sudo /etc/init.d/docker start
+</code></pre></li>
+<li><p>测试登录registry</p>
+<p>   $ sudo docker login docker-registry:443</p>
+</li>
+<li><p>查询registry中的image信息</p>
+<p>  $ curl –cacert /etc/docker/certs.d/docker-registry:443/docker-registry.crt –basic –user devlee:<password> <a href="https://docker-registry:443/v2/_catalog" target="_blank" rel="external">https://docker-registry:443/v2/_catalog</a></password></p>
+<blockquote>
+<p><strong><code>Tip:</code></strong> &lt;password&gt;是创建用户devlee时输入的密码，以上命令执行后，应该可以看到我们的koa-app</p>
+<p><strong><code>{&quot;repositories&quot;:[&quot;devlee/koa-app&quot;]}</code></strong></p>
+</blockquote>
+</li>
+<li><p>拉取koa-app的镜像</p>
+<p>$ sudo docker pull docker-registry:443/devlee/koa-app:latest</p>
+</li>
+<li><p>回到 <strong><code>主机</code></strong> 登录集群管理节点创建一个服务</p>
+<p>$ sudo docker-machine ssh manager1</p>
+<pre><code>$ sudo docker service create --replicas 1 --name koa-app docker-registry:443/devlee/koa-app:latest
+</code></pre></li>
+<li><p>查看服务</p>
+<p>$ sudo docker service ls</p>
+<pre><code>$ sudo docker service inspect --pretty koa-app
+$ sudo docker service ps koa-app
+</code></pre></li>
+<li><p>扩展服务</p>
+<p>$ sudo docker service scale koa-app=3</p>
+</li>
+</ol>
+<h3 id="集群部署服务koa-app-方法2"><a href="#集群部署服务koa-app-方法2" class="headerlink" title="集群部署服务koa-app(方法2)"></a>集群部署服务koa-app(方法2)</h3><ol>
+<li><p>我们利用虚拟机当集群节点，所以需要安装 <strong><code>virtualbox</code></strong></p>
+<p> $ sudo sh -c “echo deb <a href="http://download.virtualbox.org/virtualbox/debian" target="_blank" rel="external">http://download.virtualbox.org/virtualbox/debian</a> xenial contrib &gt; /etc/apt/sources.list”</p>
+<pre><code>$ sudo wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
+$ sudo wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
+$ sudo apt-get update
+$ sudo apt-get install virtualbox-5.1
+</code></pre></li>
+<li><p>创建一台虚拟机用作kv store服务器</p>
+<p> $ sudo docker-machine create -d virtualbox consul-kv-store</p>
+</li>
+<li><p>登录kv store服务器环境，并启动服务</p>
+<p> $ sudo eval $(docker-machine env consul-kv-store)</p>
+<pre><code>$ sudo docker run -d --name=consul --restart=always -p &quot;8500:8500&quot; -h &quot;consul&quot; progrium/consul -server -bootstrap
+</code></pre></li>
+<li><p>创建swarm-master</p>
+<p> $ sudo docker-machine create \</p>
+<pre><code>-d virtualbox \
+--swarm --swarm-master \
+--swarm-discovery=&quot;consul://$(docker-machine ip consul-kv-store):8500&quot; \
+--engine-opt=&quot;cluster-store=consul://$(docker-machine ip consul-kv-store):8500&quot; \
+--engine-opt=&quot;cluster-advertise=eth1:2376&quot; \
+swarm-master
+</code></pre></li>
+<li><p>创建swarm-node-01</p>
+<p> $ sudo docker-machine create \</p>
+<pre><code>-d virtualbox \
+--swarm
+--swarm-discovery=&quot;consul://$(docker-machine ip consul-kv-store):8500&quot; \
+--engine-opt=&quot;cluster-store=consul://$(docker-machine ip consul-kv-store):8500&quot; \
+--engine-opt=&quot;cluster-advertise=eth1:2376&quot; \
+swarm-node-01
+</code></pre></li>
+<li><p>创建swarm-node-02</p>
+<p> $ sudo docker-machine create \</p>
+<pre><code>-d virtualbox \
+--swarm
+--swarm-discovery=&quot;consul://$(docker-machine ip consul-kv-store):8500&quot; \
+--engine-opt=&quot;cluster-store=consul://$(docker-machine ip consul-kv-store):8500&quot; \
+--engine-opt=&quot;cluster-advertise=eth1:2376&quot; \
+swarm-node-02
+</code></pre></li>
+<li><p>登录虚拟机swarm-master(node-01/02)，三个节点都执行一遍8-10操作)</p>
+<p>   $ sudo docker-machine ssh swarm-master</p>
+<pre><code>$ sudo docker-machine ssh swarm-node-01
+$ sudo docker-machine ssh swarm-node-02
+</code></pre></li>
+<li><p>在 <strong><code>/etc/hosts</code></strong> 文件中加入 <strong><code>registry</code></strong> 的解析</p>
+<blockquote>
+<p>192.168.99.1 docker-registry</p>
+<p><strong>Tip:</strong> <strong><code>192.168.99.1</code></strong> 是 <strong><code>registry</code></strong> 所在 <strong><code>主机</code></strong> 的 <strong><code>vboxnet0</code></strong> 的ip，也就是主机相对于虚拟机能访问到的ip地址</p>
+</blockquote>
+</li>
+<li><p>创建 <strong><code>/etc/docker/certs.d/docker-registry:443/docker-registry.crt</code></strong> 文件，写入和之前搭建私有的gitlab中的crt文件内容即可</p>
+</li>
+<li><p>重启docker服务</p>
+<p>  $ sudo /etc/init.d/docker stop</p>
+<pre><code>$ sudo /etc/init.d/docker start
+</code></pre></li>
+<li><p>登录swarm-master管理节点创建overlay网络devlee-net</p>
+<p>$ sudo eval $(docker-machine env –swarm swarm-master)</p>
+<pre><code>docker network create --driver overlay --subnet=10.0.9.0/24 devlee-net
+</code></pre></li>
+<li><p>登录docker-registry并拉取koa-app</p>
+<p>$ sudo docker login docker-registry:443</p>
+<pre><code>$ docker pull docker-registry:443/devlee/koa-app:latest
+</code></pre></li>
+<li><p>在/work/devlee/machine目录下新建docker-compose.yml</p>
+<p>version: ‘2’</p>
+<pre><code>services:
+  koa-app:
+    image: docker-registry:443/devlee/koa-app:latest
+    ports:
+      - &apos;13232:3232&apos;
+</code></pre></li>
+<li><p>启动koa-app</p>
+<p>$ sudo docker-compose up -d</p>
+</li>
+<li><p>此时通过docker ps命令可以发现集群中的某一台机器运行了koa-app</p>
+</li>
+<li><p>扩展服务至集群所有机器（可能会有错误，因为该服务占用了特定的端口）</p>
+<p>$ sudo docker-compose scale koa-app=3</p>
+</li>
+</ol>
+<h3 id="集群多台主机之间的容器通信的方法"><a href="#集群多台主机之间的容器通信的方法" class="headerlink" title="集群多台主机之间的容器通信的方法"></a>集群多台主机之间的容器通信的方法</h3><ol>
+<li><p><strong>集群部署服务koa-app</strong></p>
+<p>通过scope为swarm的overlay类型网络ingress</p>
+<p> ingress overlay swarm</p>
+</li>
+<li><p><strong>集群部署服务koa-app(方法2)</strong></p>
+<p>通过scope为global的overlay类型网络devlee-net</p>
+<p> devlee-net overlay global</p>
+</li>
+<li><p><strong>Example</strong></p>
+<p>在主机1和主机2的容器1和容器2中部署应用1和应用2，此时应用1和应用2可以相互访问各自内容，网络名即上面的ingress或devlee-net</p>
+<p> docker run -itd –name=容器1 –network=网络名 –env=”constraint:node==机器1” 应用1</p>
+<pre><code>docker run -itd --name=容器2 --network=网络名 --env=&quot;constraint:node==机器2&quot; 应用2
+</code></pre></li>
+</ol>
+<h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><ol>
+<li><a href="https://my.oschina.net/jayqqaa12/blog/633683" target="_blank" rel="external">使用Docker构建持续集成与自动部署的Docker集群</a></li>
+<li><a href="https://www.youtube.com/watch?v=M4PFY6RZQHQ" target="_blank" rel="external">Demo of the Machine + Swarm + Compose integration</a></li>
+<li><a href="https://docs.docker.com/engine/userguide/networking/get-started-overlay/#/step-1-set-up-a-key-value-store" target="_blank" rel="external">Get started with multi-host networking</a></li>
+<li><a href="http://tonybai.com/2016/02/15/understanding-docker-multi-host-networking/" target="_blank" rel="external">理解Docker跨多主机容器网络</a></li>
+<li><a href="https://docs.docker.com/swarm/networking/" target="_blank" rel="external">Swarm and container networks</a></li>
+<li><a href="https://segmentfault.com/a/1190000000801162" target="_blank" rel="external">搭建docker内网私服（docker-registry with nginx&amp;ssl on centos）</a></li>
+<li><a href="http://xialingsc.github.io/home//docker/how-to-build-a-secure-private-docker-registry2.0-with-nginx/" target="_blank" rel="external">利用nginx及Registry2.0搭建Docker安全私有仓库</a></li>
+<li><a href="https://laserx.github.io/2016/02/22/build-self-hosted-docker-registry/" target="_blank" rel="external">基于 ubuntu 搭建 docker registry</a></li>
+<li><a href="http://www.tuicool.com/articles/6jEJZj" target="_blank" rel="external">搭建Docker私有仓库Registry-v2</a></li>
+<li><a href="http://lizhenliang.blog.51cto.com/7876557/1730028" target="_blank" rel="external">Docker Machine快速安装Docker环境（二）</a></li>
+<li><a href="http://dockone.io/article/265" target="_blank" rel="external">用Git子模块和Docker Compose实现高效开发工作流</a></li>
+<li><a href="http://debugo.com/docker-compose/" target="_blank" rel="external">Docker Compose—简化复杂应用的利器</a></li>
+<li><a href="http://dockone.io/article/962" target="_blank" rel="external">从0到1：搭建基于Travis CI和GitHub的自动化测试工作流</a></li>
+<li><a href="http://www.tuicool.com/articles/6femE3" target="_blank" rel="external">使用docker实现半自动化代码自动部署</a></li>
+<li><a href="http://blog.kazaff.me/2016/06/15/%E5%9F%BA%E4%BA%8Edocker+gitlabCI%E6%90%AD%E5%BB%BA%E7%A7%81%E6%9C%89%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E7%8E%AF%E5%A2%83/" target="_blank" rel="external">基于docker+gitlabCI搭建私有集成环境</a></li>
+<li><a href="http://walterinsh.github.io/2016/04/18/using-gitlab-ci.html" target="_blank" rel="external">使用Gitlab CI &amp; Docker搭建CI环境</a></li>
+<li><a href="http://blog.kazaff.me/2016/06/16/%E5%B0%9D%E8%AF%95%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90--%E7%AC%AC%E4%B8%80%E7%89%88/" target="_blank" rel="external">尝试持续集成–第一版</a></li>
+<li><a href="http://zhaozhiming.github.io/blog/2015/11/30/gitlab-ci-runner-create-and-config/" target="_blank" rel="external">Gitlab CI Runner的创建和配置</a></li>
+<li><a href="http://jigsawye.com/2015/09/25/gitlab-ce-in-docker/" target="_blank" rel="external">使用 Docker 建置 Gitlab CE 的 Source Control 及 CI 環境</a></li>
+<li><a href="https://linux.cn/article-5556-1.html" target="_blank" rel="external">如何在 Docker 容器之间设置网络</a></li>
+<li><a href="https://docs.docker.com/engine/installation/linux/ubuntulinux/" target="_blank" rel="external">Installation On Ubuntu</a></li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+  <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+    <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+      <span>赏</span>
+    </button>
+    <div id="QR" style="display: none;">
+      
+        <div id="wechat" style="display: inline-block">
+          <img id="wechat_qr" src="/uploads/wechatpay.png" alt="devlee WeChat Pay"/>
+          <p>微信打赏</p>
+        </div>
+      
+      
+        <div id="alipay" style="display: inline-block">
+          <img id="alipay_qr" src="/uploads/alipay.jpg" alt="devlee Alipay"/>
+          <p>支付宝打赏</p>
+        </div>
+      
+    </div>
+  </div>
+
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/docker/" rel="tag">#docker</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/01/03/Constructing-SPA-application-based-on-React-isomorphism/" rel="prev" title="Constructing-SPA-application-based-on-React-isomorphism">
+                Constructing-SPA-application-based-on-React-isomorphism <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.png"
+               alt="devlee" />
+          <p class="site-author-name" itemprop="name">devlee</p>
+          <p class="site-description motion-element" itemprop="description">Momentum</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/devlee" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/tang-li-03-13" target="_blank" title="知乎">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  知乎
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#我们要做什么"><span class="nav-number">1.</span> <span class="nav-text">我们要做什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#环境参数"><span class="nav-number">2.</span> <span class="nav-text">环境参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文档说明"><span class="nav-number">3.</span> <span class="nav-text">文档说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#准备工作"><span class="nav-number">4.</span> <span class="nav-text">准备工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#更新APT资源列表"><span class="nav-number">5.</span> <span class="nav-text">更新APT资源列表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ubuntu安装docker之前的准备"><span class="nav-number">6.</span> <span class="nav-text">ubuntu安装docker之前的准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装docker"><span class="nav-number">7.</span> <span class="nav-text">安装docker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装docker-compose"><span class="nav-number">8.</span> <span class="nav-text">安装docker compose</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装docker-machine"><span class="nav-number">9.</span> <span class="nav-text">安装docker machine</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#校验一下版本信息"><span class="nav-number">10.</span> <span class="nav-text">校验一下版本信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#搭建私有的gitlab"><span class="nav-number">11.</span> <span class="nav-text">搭建私有的gitlab</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#搭建私有的docker-registry"><span class="nav-number">12.</span> <span class="nav-text">搭建私有的docker registry</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#搭建gitlab-runner"><span class="nav-number">13.</span> <span class="nav-text">搭建gitlab-runner</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#新建项目koa-app于私有的gitlab"><span class="nav-number">14.</span> <span class="nav-text">新建项目koa-app于私有的gitlab</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集群部署服务koa-app"><span class="nav-number">15.</span> <span class="nav-text">集群部署服务koa-app</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集群部署服务koa-app-方法2"><span class="nav-number">16.</span> <span class="nav-text">集群部署服务koa-app(方法2)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集群多台主机之间的容器通信的方法"><span class="nav-number">17.</span> <span class="nav-text">集群多台主机之间的容器通信的方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考文章"><span class="nav-number">18.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">devlee</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("Jx0fit38Gf1Gjfls2KFbt20c-gzGzoHsz", "ay8SF3G6AeklQbPEy8CEfOzF");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>

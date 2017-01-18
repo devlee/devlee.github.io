@@ -1,0 +1,1822 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="react," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="本文将讲解如何构建基于React同构的SPA应用，涉及到的技术或知识点有如下若干(按字母排序，部分可选)：
+
+babel fetch http2 intl isomorphic koa material-uipostcss pwa react redux rxjs socket.io webpack …
+
+项目地址
+https://github.com/devlee/react-isomorphi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Constructing-SPA-application-based-on-React-isomorphism">
+<meta property="og:url" content="http://logit.space/2017/01/03/Constructing-SPA-application-based-on-React-isomorphism/index.html">
+<meta property="og:site_name" content="iJuJu">
+<meta property="og:description" content="本文将讲解如何构建基于React同构的SPA应用，涉及到的技术或知识点有如下若干(按字母排序，部分可选)：
+
+babel fetch http2 intl isomorphic koa material-uipostcss pwa react redux rxjs socket.io webpack …
+
+项目地址
+https://github.com/devlee/react-isomorphi">
+<meta property="og:image" content="http://logit.space/uploads/QQ20161219110624.png">
+<meta property="og:image" content="http://logit.space/uploads/QQ20161219185324.png">
+<meta property="og:image" content="http://logit.space/uploads/QQ20161219185403.png">
+<meta property="og:image" content="http://logit.space/uploads/QQ20161219185436.png">
+<meta property="og:image" content="http://logit.space/uploads/QQ20161219185503.png">
+<meta property="og:updated_time" content="2017-01-18T06:47:01.716Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Constructing-SPA-application-based-on-React-isomorphism">
+<meta name="twitter:description" content="本文将讲解如何构建基于React同构的SPA应用，涉及到的技术或知识点有如下若干(按字母排序，部分可选)：
+
+babel fetch http2 intl isomorphic koa material-uipostcss pwa react redux rxjs socket.io webpack …
+
+项目地址
+https://github.com/devlee/react-isomorphi">
+<meta name="twitter:image" content="http://logit.space/uploads/QQ20161219110624.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Constructing-SPA-application-based-on-React-isomorphism | iJuJu </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?08fe328dbbd27892d9d9c059f467f8dd";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">iJuJu</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">byLieLie</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Constructing-SPA-application-based-on-React-isomorphism
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-01-03T10:52:02+00:00" content="2017-01-03">
+              2017-01-03
+            </time>
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+             <span id="/2017/01/03/Constructing-SPA-application-based-on-React-isomorphism/" class="leancloud_visitors" data-flag-title="Constructing-SPA-application-based-on-React-isomorphism">
+               &nbsp; | &nbsp;
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               <span class="post-meta-item-text">阅读次数 </span>
+               <span class="leancloud-visitors-count"></span>
+              </span>
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文将讲解如何构建基于React同构的SPA应用，涉及到的技术或知识点有如下若干(按字母排序，部分可选)：</p>
+<blockquote>
+<p>babel fetch http2 intl isomorphic koa material-ui<br>postcss pwa react redux rxjs socket.io webpack …</p>
+</blockquote>
+<h3 id="项目地址"><a href="#项目地址" class="headerlink" title="项目地址"></a>项目地址</h3><blockquote>
+<p><a href="https://github.com/devlee/react-isomorphic" target="_blank" rel="external">https://github.com/devlee/react-isomorphic</a></p>
+</blockquote>
+<h3 id="Step-1-创建项目并安装依赖包"><a href="#Step-1-创建项目并安装依赖包" class="headerlink" title="Step 1 创建项目并安装依赖包"></a>Step 1 创建项目并安装依赖包</h3><p>新建文件夹myapp, 在此文件夹内建立如下项目结构：</p>
+<pre><code>|-- config                      // *项目配置*
+|   |-- asset                   // 静态资源配置
+|   |-- intl                    // 语言包配置
+|   |-- server                  // 服务端配置
+|   |-- webpack                 // 前端工程配置
+|-- src                         // *项目源文件*
+|   |-- client                  // 前端代码
+|   |   |-- action              // redux.action
+|   |   |-- component           // 组件
+|   |   |-- container           // 页面
+|   |   |-- css                 // 样式
+|   |   |-- decorator           // 装饰器
+|   |   |-- epic                // redux-observable.epic
+|   |   |-- reducer             // redux.reducer
+|   |   |-- route               // 页面路由
+|   |   |-- selector            // reselect
+|   |   |-- service-worker      // pwa.sw
+|   |   |-- socket              // socket功能
+|   |   |-- store               // redux.store
+|   |-- server                  // 服务端代码
+|   |   |-- middleware          // 中间件
+|   |   |-- route               // api路由
+|   |   |-- socket              // socket功能
+|   |   |-- view                // 视图模板
+|   |-- universal               // 通用代码
+|-- static                      // *静态资源*
+</code></pre><blockquote>
+<p>由于npm的普适性，本文讲述中不采用yarn，本文所有命令均在git bash中执行</p>
+</blockquote>
+<p>执行以下命令初始化项目相关信息：</p>
+<pre><code>npm init
+</code></pre><p>执行以下命令安装项目依赖包：</p>
+<pre><code>npm install babel-cli babel-core babel-loader babel-plugin-transform-class-properties babel-plugin-transform-decorators-legacy babel-plugin-transform-runtime babel-preset-latest babel-preset-react babel-preset-stage-0 classnames co-views copy-webpack-plugin core-decorators css-loader extract-text-webpack-plugin file-loader ip isomorphic-fetch isomorphic-style-loader json-loader koa@next koa-favicon@next koa-locale koa-router@next koa-static@next material-ui normalize.css offline-plugin postcss postcss-cssnext postcss-import@8.1.2 postcss-loader postcss-nested react react-dom react-hot-loader react-intl react-intl-redux react-motion react-redux react-router react-tap-event-plugin redux redux-logger redux-observable reselect rxjs socket.io socket.io-client spdy style-loader swig universal-webpack url-loader webpack webpack-node-externals --save
+</code></pre><p>查看myapp下package.json文件可见(版本号可能不同)：</p>
+<pre><code>...
+&quot;dependencies&quot;: {
+  &quot;babel-cli&quot;: &quot;^6.18.0&quot;,
+  &quot;babel-core&quot;: &quot;^6.0.0&quot;,
+  &quot;babel-loader&quot;: &quot;^6.2.7&quot;,
+  ...
+  &quot;url-loader&quot;: &quot;^0.5.7&quot;,
+  &quot;webpack&quot;: &quot;^1.13.3&quot;,
+  &quot;webpack-node-externals&quot;: &quot;^1.5.4&quot;
+},
+...
+</code></pre><p>依赖包详解</p>
+<blockquote>
+<p><a href="https://babeljs.io/docs/usage/cli/" target="_blank" rel="external">babel-cli</a> babel脚手架可从命令行直接编译文件</p>
+<p><a href="https://github.com/babel/babel/tree/master/packages/babel-core" target="_blank" rel="external">babel-core</a> babel核心包</p>
+<p><a href="https://github.com/babel/babel-loader" target="_blank" rel="external">babel-loader</a> webpack插件，用于编译js</p>
+<p><a href="https://babeljs.io/docs/plugins/transform-class-properties/" target="_blank" rel="external">babel-plugin-transform-class-properties</a> 用于格式化类的属性，比如react组件中写class，要写propTypes，该插件可以把这些多余的代码删除（确切是格式化，但效果就是删除）。</p>
+<p><a href="https://github.com/loganfsmyth/babel-plugin-transform-decorators-legacy" target="_blank" rel="external">babel-plugin-transform-decorators-legacy</a> 这是一个用于babel6的插件，用于复制babel5的旧装饰器行为，以便允许人们更容易地转换到babel6，避免在更新装饰器出问题，或者为babel6重新实现一个装饰器。</p>
+<p><a href="https://babeljs.io/docs/plugins/transform-runtime/" target="_blank" rel="external">babel-plugin-transform-runtime</a> 提供帮助类和内置类函数的外部引用，并自动修补代码且不污染全局环境。简而言之就是可以随意使用es6的各种特性，你不必关心用到了哪个，而从polyfill中去import相应的函数，该插件会自动处理好所有兼容问题。</p>
+<p><a href="https://babeljs.io/docs/plugins/preset-latest/" target="_blank" rel="external">babel-preset-latest</a> 包含了es2015/es2016/es2017…所有特性</p>
+<p><a href="https://babeljs.io/docs/plugins/preset-react/" target="_blank" rel="external">babel-preset-react</a> 用于转换jsx语法</p>
+<p><a href="https://babeljs.io/docs/plugins/preset-stage-0/" target="_blank" rel="external">babel-preset-stage-0</a> 特性插件大集合，包含了stage-1/2/3…</p>
+<p><a href="https://github.com/JedWatson/classnames" target="_blank" rel="external">classnames</a> 以js表达式的方式生成类名，用于jsx中写dom的class，当然某些class需要混合js逻辑的时候就很有用。</p>
+<p><a href="https://github.com/tj/co-views" target="_blank" rel="external">co-views</a> koa模板引擎渲染平台，是对express通用模板引擎渲染平台 <a href="https://github.com/tj/consolidate.js" target="_blank" rel="external">consolidate</a> 的封装</p>
+<p><a href="https://github.com/kevlened/copy-webpack-plugin" target="_blank" rel="external">copy-webpack-plugin</a> webpack插件，用于拷贝文件或目录</p>
+<p><a href="https://github.com/jayphelps/core-decorators.js" target="_blank" rel="external">core-decorators</a> 基于stage0语法的未被js内部实现的装饰器，可用于react/angular。</p>
+<p><a href="https://github.com/webpack/css-loader" target="_blank" rel="external">css-loader</a> webpack插件，用于打包css文件。</p>
+<p><a href="https://github.com/webpack/extract-text-webpack-plugin" target="_blank" rel="external">extract-text-webpack-plugin</a> webpack插件，用于提取css代码到独立的文件中，而不是内嵌到html文件中。</p>
+<p><a href="https://github.com/webpack/file-loader" target="_blank" rel="external">file-loader</a> webpack插件，用于将文件转换为路径。</p>
+<p><a href="https://github.com/indutny/node-ip" target="_blank" rel="external">ip</a> 生成ip地址，主要用于开发环境时webpack的静态资源路径。</p>
+<p><a href="https://github.com/matthew-andrews/isomorphic-fetch" target="_blank" rel="external">isomorphic-fetch</a> 同时用于node和browserify的fetch API。</p>
+<p><a href="https://github.com/kriasoft/isomorphic-style-loader" target="_blank" rel="external">isomorphic-style-loader</a> webpack插件，用于同构应用处理css样式部分。</p>
+<p><a href="https://github.com/webpack/json-loader" target="_blank" rel="external">json-loader</a> webpack插件，用于处理json文件，转换为object。</p>
+<p><a href="http://koajs.com/" target="_blank" rel="external">koa</a> 下一代node框架，由原express团队打造，本身不包含任何中间件。</p>
+<p><a href="https://github.com/koajs/favicon" target="_blank" rel="external">koa-favicon</a> koa中间件，用于设置favicon。</p>
+<p><a href="https://github.com/koa-modules/locale" target="_blank" rel="external">koa-locale</a> koa中间件，用于从请求中获取locale信息以便设置intl语言代码。</p>
+<p><a href="https://github.com/alexmingoia/koa-router/tree/master/" target="_blank" rel="external">koa-router</a> koa中间件，服务端路由设置。</p>
+<p><a href="https://github.com/mattstyles/koa-socket" target="_blank" rel="external">koa-socket</a> koa中间件，封装了socket.io，实现了基于http服务的ws。</p>
+<p><a href="https://github.com/turboMaCk/koa-sslify" target="_blank" rel="external">koa-sslify</a> koa中间件，对于http请求强制跳转https。</p>
+<p><a href="https://github.com/koajs/static" target="_blank" rel="external">koa-static</a> koa中间件，提供静态文件服务。</p>
+<p><a href="http://www.material-ui.com/" target="_blank" rel="external">material-ui</a> 实现了Google Material Design的react组件库。</p>
+<p><a href="https://necolas.github.io/normalize.css/" target="_blank" rel="external">normalize.css</a> css resets。</p>
+<p><a href="https://github.com/NekR/offline-plugin" target="_blank" rel="external">offline-plugin</a> webpack插件，基于service-worker等技术实现离线功能。</p>
+<p><a href="https://github.com/postcss/postcss" target="_blank" rel="external">postcss</a> 使用js插件来处理css样式代码的工具。</p>
+<p><a href="https://github.com/MoOx/postcss-cssnext" target="_blank" rel="external">postcss-cssnext</a> postcss插件，可以使用最新的css语法。</p>
+<p><a href="https://github.com/postcss/postcss-import" target="_blank" rel="external">postcss-import</a> 用于处理@import，选用8.1.2的是因为更高版本新增了一个warning功能，这个待解决，但不影响功能。</p>
+<p><a href="https://github.com/postcss/postcss-loader" target="_blank" rel="external">postcss-loader</a> webpack插件，用于使用postcss插件处理css。</p>
+<p><a href="https://github.com/postcss/postcss-nested" target="_blank" rel="external">postcss-nested</a> postcss插件，使得css可以像sass一样进行嵌套书写。</p>
+<p><a href="https://facebook.github.io/react/" target="_blank" rel="external">react</a> js框架。</p>
+<p><a href="https://www.npmjs.com/package/react-dom" target="_blank" rel="external">react-dom</a> react部分api被拆分至此库。</p>
+<p><a href="https://github.com/gaearon/react-hot-loader" target="_blank" rel="external">react-hot-loader</a> webpack插件，react热更新。</p>
+<p><a href="https://github.com/yahoo/react-intl" target="_blank" rel="external">react-intl</a> react国际化库。</p>
+<p><a href="https://github.com/ratson/react-intl-redux" target="_blank" rel="external">react-intl-redux</a> 封装了react-intl/react-redux等库。</p>
+<p><a href="https://github.com/chenglou/react-motion" target="_blank" rel="external">react-motion</a> react动效解决方案。</p>
+<p><a href="https://github.com/reactjs/react-redux" target="_blank" rel="external">react-redux</a> 官方的封装了react/redux的库。</p>
+<p><a href="https://github.com/ReactTraining/react-router" target="_blank" rel="external">react-router</a> react路由。</p>
+<p><a href="https://github.com/zilverline/react-tap-event-plugin" target="_blank" rel="external">react-tap-event-plugin</a> react插件，提供tap event支持。</p>
+<p><a href="https://github.com/reactjs/redux" target="_blank" rel="external">redux</a> react状态容器。</p>
+<p><a href="https://github.com/evgenyrodionov/redux-logger" target="_blank" rel="external">redux-logger</a> redux日志插件。</p>
+<p><a href="https://github.com/redux-observable/redux-observable" target="_blank" rel="external">redux-observable</a> 用于redux里action的rxjs中间件。</p>
+<p><a href="https://github.com/reactjs/reselect" target="_blank" rel="external">reselect</a> redux状态选择器，为不同的组件选择不同的状态。</p>
+<p><a href="https://github.com/ReactiveX/rxjs" target="_blank" rel="external">rxjs</a> js响应式扩展，适用场景：1.异步操作重，2.同时处理多个数据源。</p>
+<p><a href="http://socket.io/" target="_blank" rel="external">socket.io</a> 基于websocket的实时应用框架</p>
+<p><a href="https://github.com/socketio/socket.io-client" target="_blank" rel="external">socket.io-client</a> socket.io的客户端</p>
+<p><a href="https://github.com/indutny/node-spdy" target="_blank" rel="external">spdy</a> Google 开发的基于传输控制协议 (TCP) 的应用层协议 ，开发组正在推动 SPDY 成为正式标准（现为互联网草案）。SPDY协议旨在通过压缩、多路复用和优先级来缩短网页的加载时间和提高安全性。（SPDY 是 Speedy 的昵音，意思是更快）</p>
+<p><a href="https://github.com/webpack/style-loader" target="_blank" rel="external">style-loader</a> webpack插件，将css添加到dom中。</p>
+<p><a href="https://github.com/paularmstrong/swig" target="_blank" rel="external">swig</a> 模板引擎</p>
+<p><a href="https://github.com/halt-hammerzeit/universal-webpack" target="_blank" rel="external">universal-webpack</a> webpack同构工具</p>
+<p><a href="https://github.com/webpack/url-loader" target="_blank" rel="external">url-loader</a> webpack插件，对于需要处理的文件，会以url的方式来请求，可设置文件大小阀值，小于阀值则使用file-loader处理。</p>
+<p><a href="https://webpack.github.io/" target="_blank" rel="external">webpack</a> 模块加载器</p>
+<p><a href="https://github.com/liady/webpack-node-externals" target="_blank" rel="external">webpack-node-externals</a> webpack插件，用以node端不打包node_modules里的库</p>
+</blockquote>
+<h3 id="Step-2-创建项目配置、通用代码、静态资源"><a href="#Step-2-创建项目配置、通用代码、静态资源" class="headerlink" title="Step 2 创建项目配置、通用代码、静态资源"></a>Step 2 创建项目配置、通用代码、静态资源</h3><p>项目配置 ./config/index.js</p>
+<pre><code>const asset = require(&apos;./asset&apos;);
+
+const intl = require(&apos;./intl&apos;);
+
+const server = require(&apos;./server&apos;);
+
+const siteName = &apos;devlee.io&apos;;
+
+module.exports = {
+  asset: asset,
+  intl: intl,
+  server: server,
+  siteName: siteName
+};
+</code></pre><p>输出各分类配置</p>
+<p>客户端打包文件配置： ./config/asset/index.js</p>
+<pre><code>module.exports = {
+  development: {
+    port: 8066,
+    prefix: &apos;/&apos;
+  },
+  production: {
+    port: 8066
+  }
+};
+</code></pre><p>输出不同开发环境下所需变量，这里有端口和路径相关的变量。</p>
+<p>服务端应用程序配置： ./config/server/index.js</p>
+<pre><code>module.exports = {
+  development: {
+    port: 80,
+    ports: 443
+  },
+  production: {
+    port: 80,
+    ports: 443
+  }
+};
+</code></pre><blockquote>
+<p>./config/server/ssl下的devlee.io.crt和devlee.io.key为证书</p>
+</blockquote>
+<p>intl国际化配置： ./config/intl/index.js</p>
+<pre><code>const en = require(&apos;./en&apos;);
+const zh = require(&apos;./zh&apos;);
+
+module.exports = {
+  en: en,
+  zh: zh
+};
+</code></pre><p>这里直接输出具体的语言包</p>
+<p>英语： ./config/intl/en.js</p>
+<pre><code>module.exports = {
+  locale: &apos;en&apos;,
+  messages: {
+    nav: {
+      home: &apos;Home&apos;,
+      about: &apos;About&apos;,
+      demo: &apos;Demo&apos;
+    }
+  }
+};
+</code></pre><p>中文： ./config/intl/zh.js</p>
+<pre><code>module.exports = {
+  locale: &apos;zh&apos;,
+  messages: {
+    nav: {
+      home: &apos;首页&apos;,
+      about: &apos;关于&apos;
+    }
+  }
+};
+</code></pre><blockquote>
+<p>中文代码最好区分zh-CN，zh-TW</p>
+</blockquote>
+<p>webpack: ./config/webpack/index.js</p>
+<pre><code>...
+
+const webpackConfig = {
+  context: rootFolder,
+  resolve: {
+    extensions: [
+      &apos;&apos;,
+      &apos;.js&apos;,
+      &apos;.jsx&apos;,
+      &apos;.json&apos;
+    ]
+  },
+  entry: {
+    common: [
+      &apos;normalize.css&apos;,
+      &apos;./src/client/css/font-icons/style.css&apos;,
+      &apos;./src/client/css/common.pcss&apos;
+    ],
+    app: [
+      &apos;./src/client/index.jsx&apos;
+    ]
+  },
+  output: {
+    publicPath: assetPath,
+    path: path.resolve(rootFolder, &apos;./build&apos;),
+    filename: &apos;[name].js&apos;,
+    chunkFilename: &apos;[name].js&apos;
+  },
+  module: {
+    loaders: [
+      {
+        test: /\.(js|jsx)$/,
+        exclude: /node_modules/,
+        loader: &apos;babel&apos;
+      },
+      {
+        test: /\.json$/,
+        loader: &apos;json&apos;
+      },
+      {
+        test: /\.css$/,
+        loader: extractTextWebpackPlugin.extract(
+          &apos;style&apos;,
+          &apos;css?-autoprefixer&apos;
+        )
+      },
+      {
+        test: /\.pcss$/,
+        loader: extractTextWebpackPlugin.extract(
+          &apos;isomorphic-style&apos;,
+          &apos;css?modules&amp;localIdentName=[hash:base64:5]&amp;-autoprefixer&amp;importLoaders=1!postcss&apos;
+        )
+      },
+      {
+        test: /\.(jpg|jpeg)$/i,
+        loader: &apos;file&apos;
+      },
+      {
+        test: /\.(ico|gif|png|woff|woff2|eot|ttf|svg)$/i,
+        loader: &apos;url&apos;
+      }
+    ]
+  },
+  plugins: [
+    new webpack.optimize.CommonsChunkPlugin({
+      name: &apos;common&apos;
+    }),
+    /* eslint-disable new-cap */
+    new extractTextWebpackPlugin(&apos;[name].css&apos;),
+    new webpack.DefinePlugin({
+      &apos;process.env&apos;: {
+        NODE_ENV: JSON.stringify(env),
+        PWA: JSON.stringify(pwa)
+      }
+    })
+  ],
+  devServer: {
+    host: &apos;0.0.0.0&apos;,
+    port: assetConfigPort
+  },
+  externals: {
+    react: &apos;React&apos;,
+    &apos;react-dom&apos;: &apos;ReactDOM&apos;,
+    &apos;react-router&apos;: &apos;ReactRouter&apos;
+  },
+  regular_expressions: {
+    javascript: /\.(js|jsx)$/,
+    styles: /\.(css|pcss)$/
+  },
+  postcss: () =&gt; {
+    return [
+      postcssImport(),
+      postcssCssNext({ browsers: [&apos;&gt; 0%&apos;] }),
+      postcssNested()
+    ];
+  }
+};
+
+module.exports = webpackConfig;
+</code></pre><p>webpackConfig属性详解：</p>
+<blockquote>
+<p>context: 编译的文件相对本文件所在目录的相对路径，简单来说相对本配置文件将其设置为项目根目录就可了。本文件路径 ./config/webpack/index.js，根目录相对本文件的目录就是 path.resolve(__dirname, ‘../..’)</p>
+<p>resolve: 需要解决的模块，就是需要编译处理的文件类型。</p>
+<p>entry: 入口文件</p>
+<p>output: 编译输出文件</p>
+<p>module.loaders: 各种模块loader集合</p>
+<p>plugins： 插件，这里依此使用了提取公共代码的插件、 提取style到css文件中的插件、 全局变量插件</p>
+<p>devServer: 开发服务器配置</p>
+<p>externals: 这部分库不进行编译打包</p>
+<p>regular_expressions: UniversalWebpack配置需要</p>
+<p>postcss: postcss插件配置</p>
+</blockquote>
+<p>webpack.setting: ./config/webpack/setting.js</p>
+<pre><code>module.exports = {
+  server: {
+    input: &apos;./src/server/index.js&apos;,
+    output: &apos;./build/server/index.js&apos;
+  }
+};
+</code></pre><p>该文件配置服务端代码编译入口及出口文件路径。</p>
+<p>webpack.client: ./config/webpack/client.js</p>
+<pre><code>...
+
+delete webpackConfig.externals;
+
+webpackConfig.plugins = webpackConfig.plugins || [];
+
+webpackConfig.plugins.push(
+  new webpack.DefinePlugin({
+    &apos;process.env&apos;: {
+      CLIENT: JSON.stringify(true)
+    }
+  })
+);
+
+if (pwa) {
+  webpackConfig.plugins.unshift(
+    new CopyWebpackPlugin([{
+      from: path.resolve(rootFolder, &apos;./static&apos;),
+      to: path.resolve(rootFolder, &apos;./build&apos;)
+    }])
+  );
+  webpackConfig.plugins.push(
+    new OfflinePlugin({
+      ServiceWorker: {
+        navigateFallbackURL: &apos;/&apos;
+      }
+    })
+  );
+}
+
+module.exports = webpackConfig;
+</code></pre><p>客户端webpack配置在基础配置之上做一些处理：<br>（可选）这里删除externals是为了开发所需，实际上不删除也可以，只需要在html中加入相应库的cdn地址就可以了；<br>（必须）新增全局变量process.env.CLIENT为true<br>（可选）PWA模式下需要把static下的文件拷贝至build目录下，因为该模式下服务端会把build目录作为静态资源服务的目录；<br>（可选）PWA模式下需要设置OfflinePlugin，对于未命中sw的路径会跳转至根路径。</p>
+<p>webpack.server: ./config/webpack/server.js</p>
+<pre><code>delete webpackConfig.externals;
+
+webpackConfig = universalWebpack.serverConfiguration(webpackConfig, settings);
+
+webpackConfig.node = {
+  __dirname: true,
+  __filename: true
+};
+
+webpackConfig.externals = [webpackNodeExternals()];
+
+module.exports = webpackConfig;
+</code></pre><p>服务端webpack配置在基础配置之上做一些处理：<br>（可选）这里删除externals其实没必要，下面会重写<br>（必须）利用UniversalWebpack生成新的服务端配置<br>（必须）UniversalWebpack默认的node属性里的属性值为false，我们这按需要必须要要设置为true，这样不会导致路径出问题。<br>（必须）利用webpackNodeExternals插件过滤掉node_modules里的库，避免打包</p>
+<p>通用代码： ./src/universal</p>
+<p>cookie处理: ./src/universal/cookie.js</p>
+<pre><code>...
+
+export function setCookie(name, value, option, ctx) {
+  // server
+  if (ctx) {
+    return ctx.cookies.set(name, value, option);
+  }
+
+  // client
+  ...
+
+  document.cookie = str;
+}
+
+export function getCookie(name, ctx) {
+  // server
+  if (ctx) {
+    if (!name) {
+      return ctx.cookies;
+    }
+
+    return ctx.cookies.get(name);
+  }
+
+  // client
+  if (!name) {
+    return parse(document.cookie);
+  }
+
+  return parse(document.cookie)[name];
+}
+
+export function clearCookie(name, option, ctx) {
+  // server
+  if (ctx) {
+    return ctx.cookies.set(name, null, option);
+  }
+
+  // client
+  setCookie(name, null, option);
+}
+</code></pre><p>输出三个函数分别为设置、获取、清除cookie，最后一个参数适用于服务端koa</p>
+<p>域名设置: ./src/universal/domain.js</p>
+<pre><code>import { env } from &apos;./env&apos;;
+
+let defDomain = &apos;localhost&apos;;
+
+defDomain = (env === &apos;production&apos; ? &apos;devlee.io&apos; : defDomain);
+
+const domain = defDomain;
+
+export default domain;
+</code></pre><p>根据环境输出当前域名</p>
+<p>环境变量: ./src/universal/env.js</p>
+<pre><code>const pwa = process.env.PWA;
+
+export const env = process.env.NODE_ENV || &apos;development&apos;;
+
+export const isPwa = String(pwa) === &apos;true&apos;;
+
+export const isDev = String(env) === &apos;development&apos;;
+
+export const isClient = String(process.env.CLIENT) === &apos;true&apos;;
+</code></pre><p>输出当前环境变量名、是否为PWA模式、是否为开发模式、是否是客户端环境</p>
+<p>intl国际化相关变量: ./src/universal/intl.js</p>
+<pre><code>import en from &apos;react-intl/locale-data/en&apos;;
+
+import zh from &apos;react-intl/locale-data/zh&apos;;
+
+import config from &apos;../../config&apos;;
+
+const intlConfig = config.intl;
+
+export const intlList = [&apos;en&apos;, &apos;zh&apos;];
+
+export const intlPack = intlConfig;
+
+export const intlData = {
+  en,
+  zh
+};
+</code></pre><p>输出国际化语言列表，语言包列表、react-intl提供的相关data数据</p>
+<p>socket日志记录: ./src/universal/socket-log.js</p>
+<pre><code>import { isClient } from &apos;./env&apos;;
+
+const env = isClient ? &apos;client&apos; : &apos;server&apos;;
+
+const prefix = `[socket.io-${env}] `;
+
+const log = (ctx) =&gt; {
+  if (ctx) {
+    console.log(&apos;&gt;&gt;&gt;&apos;);
+    console.log(`${prefix}EventType: ${ctx.type}`);
+    console.log(`${prefix}EventName: ${ctx.event}`);
+    console.log(`${prefix}Data Begin:`);
+    console.log(&apos; &apos;);
+    console.log(ctx.data);
+    console.log(&apos; &apos;);
+    console.log(`${prefix}Data End.`);
+    console.log(&apos;&lt;&lt;&lt;&apos;);
+  }
+};
+
+export default log;
+</code></pre><p>输出socket日志函数，用于on/emit时的记录</p>
+<p>静态资源： ./static</p>
+<p>服务端用favicon.ico<br>PWA用favicon.png<br>PWA用index.html</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;React Isomorphic Seed&lt;/title&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+    &lt;meta name=&quot;theme-color&quot; content=&quot;#00bcd4&quot;&gt;
+    &lt;link rel=&quot;icon&quot; href=&quot;/favicon.png&quot;&gt;
+    &lt;link rel=&quot;apple-touch-icon&quot; href=&quot;/favicon.png&quot;&gt;
+    &lt;link rel=&quot;manifest&quot; href=&quot;/manifest.json&quot;&gt;
+    &lt;link rel=&quot;canonical&quot; href=&quot;https://devlee.io&quot; /&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;/common.css&quot;&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;/app.css&quot;&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;app&quot;&gt;&lt;/div&gt;
+    &lt;noscript&gt;
+      devlee.io
+    &lt;/noscript&gt;
+    &lt;script src=&quot;/common.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;/app.js&quot;&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre><p>PWA用manifest.json</p>
+<pre><code>{
+  &quot;name&quot;: &quot;React Isomorphic PWA&quot;,
+  &quot;short_name&quot;: &quot;react pwa&quot;,
+  &quot;icons&quot;: [{
+    &quot;src&quot;: &quot;favicon.png&quot;,
+    &quot;type&quot;: &quot;image/png&quot;,
+    &quot;sizes&quot;: &quot;192x192&quot;
+  }],
+  &quot;start_url&quot;: &quot;/?utm_source=homescreen&quot;,
+  &quot;display&quot;: &quot;standalone&quot;,
+  &quot;background_color&quot;: &quot;#ffffff&quot;,
+  &quot;theme_color&quot;: &quot;#00bcd4&quot;
+}
+</code></pre><h3 id="Step-3-创建前后端入口文件"><a href="#Step-3-创建前后端入口文件" class="headerlink" title="Step 3 创建前后端入口文件"></a>Step 3 创建前后端入口文件</h3><p>client: ./src/client/index.jsx</p>
+<pre><code>...
+
+window.onload = () =&gt; {
+  /* eslint-disable no-underscore-dangle */
+  if (isPwa) {
+    sw.init();
+  }
+
+  socket.init();
+
+  const store = configureStore(
+    reducer,
+    window.__INITIAL_STATE__
+  );
+
+  const state = store.getState();
+
+  injectTapEventPlugin();
+
+  render(
+    &lt;Provider store={store}&gt;
+      &lt;Router history={browserHistory}&gt;
+        {route(state)}
+      &lt;/Router&gt;
+    &lt;/Provider&gt;,
+    document.getElementById(&apos;app&apos;)
+  );
+};
+</code></pre><p>前端入口文件，我们需要对相关功能作初始化操作，包括service-worker(PWA mode)，socket，redux store, material-ui tapEvent, react render。<br>（可选）如果当前是PWA模式，那么需要执行sw的init，来初始化service worker;<br>（可选）socket直接执行init方法即可；<br>（可选）如果使用redux，则需要store配置，需要reducer和初始状态集window.<strong>INITIAL_STATE</strong>，该值由服务端渲染到页面的script中；<br>（可选）如果使用redux，则需要获取state，利用store的getSate方法获得；<br>（可选）如果使用material-ui，则必须执行injectTapEventPlugin方法来注入tagEvent；<br>（可选）如果使用intl，Provider从react-intl-redux引入，否则从react-redux引入。<br>（可选）如果使用react-router，则需配置history和route<br>（必须）render方法必须，第一个参数是组件，第二个参数是挂载的dom对象</p>
+<blockquote>
+<p>PWA模式：<a href="https://developers.google.com/web/progressive-web-apps/" target="_blank" rel="external">Progressive Web Apps</a></p>
+</blockquote>
+<p>server: ./index.js</p>
+<pre><code>const UniversalWebpack = require(&apos;universal-webpack&apos;);
+
+const config = require(&apos;./config/webpack&apos;);
+
+const settings = require(&apos;./config/webpack/setting&apos;);
+
+UniversalWebpack.server(config, settings);
+</code></pre><p>该文件为服务端启动文件，即可通过node命令直接运行的。UniversalWebpack会通过webpack的配置config和服务端的设置settings来启动服务。</p>
+<p>server: ./src/server/index.js</p>
+<pre><code>...
+
+export default () =&gt; {
+  let httpsApp;
+  const httpApp = new Koa();
+  const serverConfig = config.server;
+  let app;
+  let options;
+
+  if (isPwa) {
+    httpsApp = new Koa();
+    app = httpsApp;
+    options = {
+      key: fs.readFileSync(path.resolve(rootFolder, &apos;./config/server/ssl/devlee.io.key&apos;)),
+      cert: fs.readFileSync(path.resolve(rootFolder, &apos;./config/server/ssl/devlee.io.crt&apos;))
+    };
+    httpApp.use(ctx =&gt; {
+      ctx.status = 301;
+      ctx.redirect(`https://${ctx.hostname}:${serverConfig[env].ports}${ctx.path}${ctx.search}`);
+      ctx.body = &apos;Redirecting to https&apos;;
+    });
+  } else {
+    app = httpApp;
+  }
+
+  middleware.intl(app);
+
+  app.use(middleware.error)
+     .use(middleware.ssl)
+     .use(middleware.favicon)
+     .use(middleware.static)
+     .use(middleware.helper)
+     .use(middleware.navigator)
+     .use(middleware.view)
+     .use(router.routes())
+     .use(router.allowedMethods());
+
+  if (isPwa) {
+    http.createServer(httpApp.callback()).listen(serverConfig[env].port, () =&gt; {
+      console.log(`http app start at port ${serverConfig[env].port}`);
+    });
+    const httpsServer = spdy.createServer(
+      options,
+      httpsApp.callback()
+    );
+    middleware.io(httpsServer);
+    httpsServer.listen(serverConfig[env].ports, () =&gt; {
+      console.log(`https app start at port ${serverConfig[env].ports}`);
+    });
+  } else {
+    middleware.io(app);
+    app.listen(serverConfig[env].port, () =&gt; {
+      console.log(`http app start at port ${serverConfig[env].port}`);
+    });
+  }
+};
+</code></pre><p>该文件为主要入口文件，由于需要被UniversalWebpack所使用，所以必须export一个function，在function中写相关代码。<br>PWA模式下会启动http和spdy两种服务，spdy（强制https，支持http2），这里的http服务只做强制跳转https作用；<br>普通开发模式下只创建http服务；<br>两种模式下的koa实例都会加载中间件实现相应的功能，例如route，socket等。</p>
+<h3 id="Step-4-服务端中间件、路由、socket、视图模板搭建"><a href="#Step-4-服务端中间件、路由、socket、视图模板搭建" class="headerlink" title="Step 4 服务端中间件、路由、socket、视图模板搭建"></a>Step 4 服务端中间件、路由、socket、视图模板搭建</h3><p>中间件： ./src/server/middleware/index.js</p>
+<pre><code>export default {
+  error,
+  view,
+  favicon,
+  helper,
+  intl,
+  navigator,
+  io,
+  static: serverStatic,
+  ssl,
+  cookie
+};
+</code></pre><p>输出各分类中间件<br>error用于记录服务端错误；<br>view用于设置视图引擎；<br>favicon用于设置服务器favicon；<br>helper用于生成帮助类函数如css、script；<br>intl输出koa-locale用于获取locale值；<br>navigator用于material-ui配置；</p>
+<p>io ./src/server/middleware/io/index.js</p>
+<pre><code>import IO from &apos;koa-socket&apos;;
+
+import IO2 from &apos;socket.io&apos;;
+
+import socket from &apos;../../socket&apos;;
+
+import onInit from &apos;./on&apos;;
+
+import { isPwa } from &apos;../../../universal/env&apos;;
+
+let ioInstance;
+
+const io = app =&gt; {
+  if (isPwa) {
+    ioInstance = IO2.listen(app);
+    ioInstance.sockets.on(&apos;connection&apos;, io2 =&gt; {
+      socket.init(io2);
+      onInit();
+    });
+  } else {
+    ioInstance = new IO();
+    ioInstance.attach(app);
+    socket.init(ioInstance);
+    onInit();
+  }
+};
+
+export default io;
+</code></pre><p>PWA模式下将直接使用socket.io来初始化；<br>非PWA模式使用koa-socket库来初始化；<br>onInit方法会初始化socket监听事件；</p>
+<p>static用于服务端静态资源配置；<br>ssl用于强制跳转https；<br>cookie用于koa路由；</p>
+<p>路由： ./src/server/route/index.js</p>
+<pre><code>...
+
+const router = new Router();
+
+router.use(middleware.cookie);
+
+data(router);
+
+main(router);
+
+export default router;
+</code></pre><p>data为api路由，main为主页面路由</p>
+<p>api路由： ./src/server/router/data/index.js</p>
+<pre><code>export default router =&gt; {
+  router.get(&apos;/test&apos;, ctx =&gt; {
+    ctx.body = &apos;test&apos;;
+  });
+};
+</code></pre><p>测试api</p>
+<p>主页面路由： ./src/server/router/main/index.js</p>
+<pre><code>...
+
+let injectTapEventPluginFlag = false;
+
+function getTasks(renderProps, store) {
+  let tasks = [];
+
+  Object.keys(renderProps.components).map(component =&gt; {
+    if (component &amp;&amp; component.WrappedComponent &amp;&amp; component.WrappedComponent.fetchData) {
+      const tempTasks = component.WrappedComponent.fetchData(store.getState(),
+        store.dispatch, renderProps.params);
+      if (Array.isArray(tempTasks)) {
+        tasks = tasks.concat(tempTasks);
+      } else if (tempTasks.then) {
+        tasks.push(tempTasks);
+      }
+    }
+
+    return component;
+  });
+
+  return tasks;
+}
+
+export default router =&gt; {
+  router.get(&apos;/*&apos;, async ctx =&gt; {
+    let matchError;
+    let matchRedirect;
+    let matchProps;
+    let isomorphicHtml;
+
+    let locale = ctx.getLocaleFromHeader() || &apos;en&apos;;
+
+    if (!intlPack[locale]) {
+      locale = &apos;en&apos;;
+    }
+
+    const store = configureStore(reducer, {
+      intl: intlPack[locale]
+    });
+
+    const state = store.getState();
+
+    await match({
+      routes: route(state),
+      location: ctx.url
+    }, (err, redirectLocation, renderProps) =&gt; {
+      matchError = err;
+      matchRedirect = redirectLocation;
+      matchProps = renderProps;
+    });
+
+    if (matchProps) {
+      const tasks = getTasks(matchProps, store);
+
+      await Promise.all(tasks);
+
+      if (!injectTapEventPluginFlag) {
+        injectTapEventPlugin();
+        injectTapEventPluginFlag = true;
+      }
+
+      isomorphicHtml = renderToString(
+        &lt;Provider store={store}&gt;
+          &lt;RouterContext {...matchProps} /&gt;
+        &lt;/Provider&gt;
+      );
+    }
+
+    if (matchError) {
+      throw matchError;
+    } else if (matchRedirect) {
+      ctx.redirect(matchRedirect.pathname + matchRedirect.search);
+    } else if (isomorphicHtml) {
+      ctx.body = await ctx.render(&apos;app&apos;, {
+        isomorphicHtml,
+        isomorphicState: state,
+        locale
+      });
+    } else {
+      console.error(&apos;there was no route found matching the given location&apos;);
+      ctx.redirect(&apos;/&apos;);
+      ctx.status = 301;
+      ctx.body = &apos;Redirecting to home page&apos;;
+    }
+  });
+};
+</code></pre><p>仅仅一个get(/*)路由来处理</p>
+<p>socket包装： ./src/server/socket/index.js</p>
+<pre><code>import log from &apos;../../universal/socket-log&apos;;
+
+import { isPwa } from &apos;../../universal/env&apos;;
+
+const socket = {};
+
+let ioInstance = null;
+
+const emit = (event, data) =&gt; {
+  log({
+    event,
+    data,
+    type: &apos;emit&apos;
+  });
+
+  if (isPwa) {
+    ioInstance.emit(event, data);
+  } else {
+    ioInstance.broadcast(event, data);
+  }
+};
+
+const on = (event, cb) =&gt; {
+  ioInstance.on(event, cb);
+};
+
+socket.init = io =&gt; {
+  if (ioInstance === null || isPwa) {
+    ioInstance = io;
+  }
+
+  socket.io = ioInstance;
+
+  if (isPwa) {
+    io.use(async (ctx, next) =&gt; {
+      if (ctx &amp;&amp; ctx.length &gt; 1) {
+        log({
+          event: ctx[0],
+          data: ctx[1],
+          type: &apos;on&apos;
+        });
+      }
+      await next();
+    });
+  } else {
+    io.use(async (ctx, next) =&gt; {
+      log({
+        event: ctx.event,
+        data: ctx.data,
+        type: &apos;on&apos;
+      });
+      await next();
+    });
+    socket.init = () =&gt; {};
+  }
+};
+
+socket.emit = emit;
+
+socket.on = on;
+
+export default socket;
+</code></pre><p>视图模板： ./src/server/view/index.twig</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;{{ locale }}&quot;&gt;
+  &lt;head&gt;
+    &lt;title&gt;{{ title || 'React Isomorphic Seed' }}&lt;/title&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+    &lt;meta name=&quot;theme-color&quot; content=&quot;#00bcd4&quot;&gt;
+    &lt;link rel=&quot;icon&quot; href=&quot;/favicon.png&quot;&gt;
+    &lt;link rel=&quot;apple-touch-icon&quot; href=&quot;/favicon.png&quot;&gt;
+    &lt;link rel=&quot;manifest&quot; href=&quot;/manifest.json&quot;&gt;
+    &lt;link rel=&quot;canonical&quot; href=&quot;https://devlee.io&quot; /&gt;
+    {{ css('common') }}
+    {{ css('app') }}
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;app&quot;&gt;{{ isomorphicHtml|raw }}&lt;/div&gt;
+    &lt;script&gt;
+      window.__INITIAL_STATE__ = {{ isomorphicState|json|raw }};
+    &lt;/script&gt;
+    &lt;noscript&gt;
+      devlee.io
+    &lt;/noscript&gt;
+    {{ script('common') }}
+    {{ script('app') }}
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre><h3 id="Step-5-客户端根组件及页面级组件"><a href="#Step-5-客户端根组件及页面级组件" class="headerlink" title="Step 5 客户端根组件及页面级组件"></a>Step 5 客户端根组件及页面级组件</h3><p>根组件App： ./src/client/component/App/index.jsx</p>
+<pre><code>...
+
+@connect()
+@autobind
+export default class App extends React.PureComponent {
+  static propTypes = {
+    children: React.PropTypes.object,
+    location: React.PropTypes.object
+  };
+
+  render() {
+    const context = {
+      userAgent: navigator.userAgent || &apos;all&apos;
+    };
+
+    const { location, children } = this.props;
+
+    return (
+      &lt;MuiThemeProvider muiTheme={getMuiTheme(context)}&gt;
+        &lt;div className=&quot;root app-component&quot;&gt;
+          &lt;Nav location={location} /&gt;
+          { children }
+        &lt;/div&gt;
+      &lt;/MuiThemeProvider&gt;
+    );
+  }
+}
+</code></pre><p>使用装饰器connect来链接状态管理器redux<br>使用装饰器autobind来自动绑定类的方法<br>使用material-ui的MuiThemeProvider包装以使用其组件，通过navigator.userAgent来配置组件的样式，即该组件系统会根据用户访问的环境不同而表现出不同的样式（内置）</p>
+<p>页面级组件放置目录位于./src/client/container</p>
+<h3 id="Step-6-客户端基础样式及组件样式"><a href="#Step-6-客户端基础样式及组件样式" class="headerlink" title="Step 6 客户端基础样式及组件样式"></a>Step 6 客户端基础样式及组件样式</h3><p>基础样式目录： ./src/client/css</p>
+<p>common.pcss 中包含了共用样式<br>variable.pcss 中包含了样式变量<br>其余文件夹内的文件为细分样式类别，包括字体、hack、变量等等，以上两个文件按需从这些类别中引入文件即可</p>
+<p>组件样式位置随组件位于同级目录下</p>
+<h3 id="Step-7-客户端路由、-socket、-service-worker"><a href="#Step-7-客户端路由、-socket、-service-worker" class="headerlink" title="Step 7 客户端路由、 socket、 service-worker"></a>Step 7 客户端路由、 socket、 service-worker</h3><p>路由： ./src/client/route/index.js</p>
+<pre><code>...
+
+const route = () =&gt; {
+  return (
+    &lt;Route path=&quot;/&quot; component={App}&gt;
+      &lt;IndexRoute component={Home} /&gt;
+      &lt;Redirect from=&quot;home&quot; to=&quot;/&quot; /&gt;
+      &lt;Route path=&quot;about&quot; component={About} /&gt;
+      &lt;Route path=&quot;demo&quot; component={Demo}&gt;
+        &lt;Route path=&quot;:demoId&quot; component={DemoItem} /&gt;
+      &lt;/Route&gt;
+    &lt;/Route&gt;
+  );
+};
+
+export default route;
+</code></pre><p>定义了“/”为根路由映射到App组件<br>定义了默认首页路由映射到Home组件<br>重定向了“home”路径映射到根路由<br>定义了about、demo页面路由及demo详情页路由</p>
+<p>socket包装： ./src/client/socket/index.js</p>
+<pre><code>...
+
+let ioInstance = null;
+
+const socket = {};
+
+const emit = (event, data) =&gt; {
+  log({
+    event,
+    data,
+    type: &apos;emit&apos;
+  });
+  ioInstance.emit(event, data);
+};
+
+const on = (event, cb) =&gt; {
+  ioInstance.on(event, data =&gt; {
+    log({
+      event,
+      data,
+      type: &apos;on&apos;
+    });
+    cb(data);
+  });
+};
+
+socket.init = () =&gt; {
+  ioInstance = io();
+
+  socket.io = ioInstance;
+
+  onInit();
+
+  socket.init = () =&gt; {};
+};
+
+socket.emit = emit;
+
+socket.on = on;
+
+export default socket;
+</code></pre><p>类似服务端，对原生socket实例包装以便log</p>
+<p>service-worker： ./src/client/service-worker/index.js</p>
+<pre><code>...
+
+const sw = {};
+
+sw.init = () =&gt; {
+  if (isPwa) {
+    offline.install();
+  }
+};
+
+export default sw;
+</code></pre><p>PWA模式下初始化一下offline-plugin/runtime库</p>
+<h3 id="Step-8-客户端redux、-rxjs、-reselect"><a href="#Step-8-客户端redux、-rxjs、-reselect" class="headerlink" title="Step 8 客户端redux、 rxjs、 reselect"></a>Step 8 客户端redux、 rxjs、 reselect</h3><p>redux/store: ./src/client/store/index.js</p>
+<pre><code>...
+
+const composeEnhancers = isClient ?
+  (window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose) :
+  compose;
+
+const epicMiddleware = createEpicMiddleware(epic);
+
+const configureStore = isDev ?
+  composeEnhancers(applyMiddleware(
+    epicMiddleware,
+    ReduxLogger()
+  ))(createStore) :
+  applyMiddleware(
+    epicMiddleware
+  )(createStore);
+
+export default configureStore;
+</code></pre><p>store配置文件，这里可以加入中间件epic，开发环境还可以加入logger, devtools等</p>
+<p>redux/action: ./src/client/action/index.js</p>
+<pre><code>export const TEST_REQUEST = &apos;TEST_REQUEST&apos;;
+
+export const TEST_RESPONSE = &apos;TEST_RESPONSE&apos;;
+
+export const TEST_CANCEL = &apos;TEST_CANCEL&apos;;
+
+export const TEST_ERROR = &apos;TEST_ERROR&apos;;
+
+export function testRequest() {
+  return {
+    type: TEST_REQUEST
+  };
+}
+
+export function testResponse() {
+  return {
+    type: TEST_RESPONSE
+  };
+}
+
+export function testCancel() {
+  return {
+    type: TEST_CANCEL
+  };
+}
+
+export function testError() {
+  return {
+    type: TEST_ERROR
+  };
+}
+</code></pre><p>这些都是测试action</p>
+<p>redux/reducer: ./src/client/reducer/index.js</p>
+<pre><code>...
+
+intlList.map(item =&gt; {
+  addLocaleData(intlData[item]);
+  return item;
+});
+
+const reducer = combineReducers({
+  intl: intlReducer,
+  socket,
+  test
+});
+
+export default reducer;
+</code></pre><p>这里包装一下所有的reducer</p>
+<p>redux/reducer/test: ./src/client/reducer/test.js</p>
+<pre><code>import { TEST_REQUEST, TEST_RESPONSE, TEST_CANCEL, TEST_ERROR } from &apos;../action&apos;;
+
+export default function (state = {
+  count: 0,
+  fetching: false
+}, action) {
+  switch (action.type) {
+    case TEST_REQUEST: {
+      return {
+        count: state.count,
+        fetching: true
+      };
+    }
+    case TEST_RESPONSE: {
+      return {
+        count: state.count + 1,
+        fetching: false
+      };
+    }
+    case TEST_CANCEL: {
+      return {
+        count: state.count,
+        fetching: false
+      };
+    }
+    case TEST_ERROR: {
+      return {
+        count: state.count,
+        fetching: false
+      };
+    }
+    default:
+      return state;
+  }
+}
+</code></pre><p>测试reducer响应相应action的逻辑</p>
+<p>rxjs/epic: ./src/client/epic/index.js</p>
+<pre><code>import { combineEpics } from &apos;redux-observable&apos;;
+
+import test from &apos;./test&apos;;
+
+const epic = combineEpics(
+  test
+);
+
+export default epic;
+</code></pre><p>这里包装一下所有的epic</p>
+<p>rxjs/epic/test: ./src/client/epic/test.js</p>
+<pre><code>import { Observable } from &apos;rxjs/Observable&apos;;
+
+import { TEST_REQUEST, TEST_CANCEL, testResponse } from &apos;../action&apos;;
+
+import socket from &apos;../socket&apos;;
+
+export default function (action$) {
+  return action$
+    .ofType(TEST_REQUEST)
+    .switchMap(() =&gt; {
+      socket.emit(&apos;data&apos;, {
+        test: &apos;io&apos;
+      });
+      return Observable
+        .fromEvent(socket.io, &apos;data&apos;)
+        .filter(data =&gt; typeof data.test !== &apos;undefined&apos;)
+        .delay(800)
+        .mapTo(testResponse())
+        .takeUntil(action$.ofType(TEST_CANCEL));
+    });
+}
+</code></pre><p>测试epic响应及触发相应action的逻辑：<br>响应TEST_REQUEST<br>触发socket对象的emit方法<br>监听socket.io对象的data方法<br>过滤数据<br>延迟800ms<br>触发testResponse<br>除非在延迟期间有TEST_CANCEL被触发</p>
+<h3 id="Step-9-附录"><a href="#Step-9-附录" class="headerlink" title="Step 9 附录"></a>Step 9 附录</h3><p><img src="/uploads/QQ20161219110624.png" alt="PWA模式下Lighthouse满分截图"></p>
+<p><img src="/uploads/QQ20161219185324.png" alt="PWA模式下模拟器截图1"></p>
+<p><img src="/uploads/QQ20161219185403.png" alt="PWA模式下模拟器截图2"></p>
+<p><img src="/uploads/QQ20161219185436.png" alt="PWA模式下模拟器截图3"></p>
+<p><img src="/uploads/QQ20161219185503.png" alt="PWA模式下模拟器截图4"></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <div>
+      
+        
+  <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+    <div>坚持原创技术分享，您的支持将鼓励我继续创作！</div>
+    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+      <span>赏</span>
+    </button>
+    <div id="QR" style="display: none;">
+      
+        <div id="wechat" style="display: inline-block">
+          <img id="wechat_qr" src="/uploads/wechatpay.png" alt="devlee WeChat Pay"/>
+          <p>微信打赏</p>
+        </div>
+      
+      
+        <div id="alipay" style="display: inline-block">
+          <img id="alipay_qr" src="/uploads/alipay.jpg" alt="devlee Alipay"/>
+          <p>支付宝打赏</p>
+        </div>
+      
+    </div>
+  </div>
+
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/react/" rel="tag">#react</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/18/Docker-On-Ubuntu/" rel="next" title="Docker On Ubuntu">
+                <i class="fa fa-chevron-left"></i> Docker On Ubuntu
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/uploads/avatar.png"
+               alt="devlee" />
+          <p class="site-author-name" itemprop="name">devlee</p>
+          <p class="site-description motion-element" itemprop="description">Momentum</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/devlee" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.zhihu.com/people/tang-li-03-13" target="_blank" title="知乎">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  知乎
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#项目地址"><span class="nav-number">1.</span> <span class="nav-text">项目地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-1-创建项目并安装依赖包"><span class="nav-number">2.</span> <span class="nav-text">Step 1 创建项目并安装依赖包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-2-创建项目配置、通用代码、静态资源"><span class="nav-number">3.</span> <span class="nav-text">Step 2 创建项目配置、通用代码、静态资源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-3-创建前后端入口文件"><span class="nav-number">4.</span> <span class="nav-text">Step 3 创建前后端入口文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-4-服务端中间件、路由、socket、视图模板搭建"><span class="nav-number">5.</span> <span class="nav-text">Step 4 服务端中间件、路由、socket、视图模板搭建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-5-客户端根组件及页面级组件"><span class="nav-number">6.</span> <span class="nav-text">Step 5 客户端根组件及页面级组件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-6-客户端基础样式及组件样式"><span class="nav-number">7.</span> <span class="nav-text">Step 6 客户端基础样式及组件样式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-7-客户端路由、-socket、-service-worker"><span class="nav-number">8.</span> <span class="nav-text">Step 7 客户端路由、 socket、 service-worker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-8-客户端redux、-rxjs、-reselect"><span class="nav-number">9.</span> <span class="nav-text">Step 8 客户端redux、 rxjs、 reselect</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-9-附录"><span class="nav-number">10.</span> <span class="nav-text">Step 9 附录</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">devlee</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("Jx0fit38Gf1Gjfls2KFbt20c-gzGzoHsz", "ay8SF3G6AeklQbPEy8CEfOzF");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+</body>
+</html>
